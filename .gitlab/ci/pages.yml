@@ -1,0 +1,58 @@
+---
+variables:
+  PUBLISH_PAGES:
+    value: ""
+    description: "Set to 'true' to force publish the generated pages. Can be set to 'false'"
+
+# ------------------------------------------------------------------------------
+# .pages:user
+# ------------------------------------------------------------------------------
+.pages:user:pre:
+  before_script:
+    - /bin/true
+
+.pages:user:post:
+  before_script:
+    - /bin/true
+
+.pages:defaults:
+  extends: .core:defaults
+  image: "$PYTHON_JOB_IMAGE"
+  stage: deploy
+  inherit:
+    default: false
+  artifacts:
+    paths:
+      - public/
+  before_script:
+    - !reference [".core:defaults", before_script]
+    - !reference [".pages:user:pre", before_script]
+    - (mkdir -p public && touch public/.placeholder) 2>/dev/null || true
+    - !reference [".pages:user:post", before_script]
+  script:
+    - mv -vf public/sphinx/html/*  public/
+    - mv -vf public/sphinx/html/.* public/ || true
+  rules:
+    - !reference [".core:rules:not_if", pages_are_inactive]
+    - !reference [".core:rules:not_if", is_merge_request]
+    - when: on_success
+
+
+# ------------------------------------------------------------------------------
+# .pages
+# ------------------------------------------------------------------------------
+.pages:
+  extends: .pages:defaults
+  inherit:
+    default: false
+  rules:
+    # We need defaults, and for pages this could be the default branch, or on tags.
+    # For this reason, use same rules than for .python:package:upload, but add
+    # an overwrite switch
+    - if: $PUBLISH_PAGES == "true"
+      when: on_success
+    - if: $PUBLISH_PAGES == "false"
+      when: never
+    - !reference [".core:rules:not_if", is_not_protected]
+    - !reference [".core:rules:if", is_tag]
+    - !reference [".pages:defaults", rules]

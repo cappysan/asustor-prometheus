@@ -1,0 +1,48 @@
+{
+  "general": {
+    "architecture": "any",
+    "conflicts": [],
+    "depends": [],
+    "email": "julien@cappysan.dev",
+    "firmware": "5.0.0",
+    "maintainer": "Cappysan",
+    "name": "Prometheus",
+    "package": "cappysan-prometheus",
+    "version": "3.8.0-r1",
+    "developer": "Cloud Native Computing Foundation",
+    "website": "https://gitlab.com/cappysan/asustor/prometheus"
+  },
+  "register": {
+    "share-folder": [
+      {
+        "name": "Configuration",
+        "description": "Application configuration"
+      }
+    ],
+    "boot-priority": {
+      "start-order": 70,
+      "stop-order": 30
+    },
+    "port": [
+      9090
+    ],
+    "symbolic-link": {
+      "/bin": [
+        "promtool"
+      ]
+    }
+  },
+  "adm-desktop": {
+    "app": {
+      "port": 9090,
+      "protocol": "http",
+      "type": "custom",
+      "http_port": 9090,
+      "url": "/"
+    },
+    "privilege": {
+      "accessible": "users",
+      "customizable": true
+    }
+  }
+}

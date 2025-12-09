@@ -1,0 +1,127 @@
+---
+groups:
+  - name: PrometheusRules
+    rules:
+      - alert: PrometheusJobMissing
+        expr: absent(up{job="prometheus"})
+        for: 2m
+        labels:
+          severity: warning
+          app: prometheus
+        annotations:
+          summary: "Host {{ $labels.node }}, Prometheus 'prometheus' scrape job missing"
+
+      - alert: PrometheusConfigReloadFailure
+        expr: prometheus_config_last_reload_successful != 1
+        for: 0m
+        labels:
+          severity: warning
+          app: prometheus
+        annotations:
+          summary: "Host {{ $labels.node }}, Prometheus configuration reload error"
+
+      - alert: PrometheusTooManyRestarts
+        expr: changes(process_start_time_seconds{job=~"prometheus|pushgateway|alertmanager"}[2m]) > 4
+        for: 0m
+        labels:
+          severity: warning
+          app: prometheus
+        annotations:
+          summary: "Host {{ $labels.node }}, Prometheus has restarted more than twice in the last 5 minutes"
+
+  - name: PrometheusRuleEvaluationRules
+    rules:
+      - alert: PrometheusRuleEvaluationFailures
+        expr: increase(prometheus_rule_evaluation_failures_total[3m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          app: prometheus.rule
+        annotations:
+          summary: "Host {{ $labels.node }}, Prometheus {{ $value }} rule evaluation failures"
+          description: "Prometheus encountered {{ $value }} rule evaluation failures, leading to potentially ignored alerts."
+
+      - alert: PrometheusTemplateTextExpansionFailures
+        expr: increase(prometheus_template_text_expansion_failures_total[3m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          app: prometheus.rule
+        annotations:
+          summary: "Host {{ $labels.node }}, Prometheus {{ $value }} template text expansion failures"
+
+      - alert: PrometheusRuleEvaluationSlow
+        expr: prometheus_rule_group_last_duration_seconds > prometheus_rule_group_interval_seconds
+        for: 5m
+        labels:
+          severity: warning
+          app: prometheus.rule
+        annotations:
+          summary: "Host {{ $labels.node }}, Prometheus rule evaluation took more time than the scheduled interval"
+          description: "Prometheus rule evaluation took more time than the scheduled interval. It indicates a slower storage backend access or too complex query."
+
+  # ----------------------------------------------------------------------------
+  - name: PrometheusTsdbRules
+    rules:
+      - alert: PrometheusTsdbCheckpointCreationFailures
+        expr: increase(prometheus_tsdb_checkpoint_creations_failed_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          app: prometheus.tsdb
+        annotations:
+          summary: "Host {{ $labels.node }}, {{ $value }} Prometheus TSDB checkpoint creation failures"
+
+      - alert: PrometheusTsdbCheckpointDeletionFailures
+        expr: increase(prometheus_tsdb_checkpoint_deletions_failed_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          app: prometheus.tsdb
+        annotations:
+          summary: "Host {{ $labels.node }}, {{ $value }} Prometheus TSDB checkpoint deletion failures"
+
+      - alert: PrometheusTsdbCompactionsFailed
+        expr: increase(prometheus_tsdb_compactions_failed_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          app: prometheus.tsdb
+        annotations:
+          summary: "Host {{ $labels.node }}, {{ $value }} Prometheus TSDB compactions failures"
+
+      - alert: PrometheusTsdbHeadTruncationsFailed
+        expr: increase(prometheus_tsdb_head_truncations_failed_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          app: prometheus.tsdb
+        annotations:
+          summary: "Host {{ $labels.node }}, {{ $value }} Prometheus TSDB head truncation failures"
+
+      - alert: PrometheusTsdbReloadFailures
+        expr: increase(prometheus_tsdb_reloads_failures_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          app: prometheus.tsdb
+        annotations:
+          summary: "Host {{ $labels.node }}, {{ $value }} Prometheus TSDB reload failures"
+
+      - alert: PrometheusTsdbWalCorruptions
+        expr: increase(prometheus_tsdb_wal_corruptions_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          app: prometheus.tsdb
+        annotations:
+          summary: "Host {{ $labels.node }}, {{ $value }} Prometheus TSDB WAL corruptions"
+
+      - alert: PrometheusTsdbWalTruncationsFailed
+        expr: increase(prometheus_tsdb_wal_truncations_failed_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          app: prometheus.tsdb
+        annotations:
+          summary: "Host {{ $labels.node }}, {{ $value }} Prometheus TSDB WAL truncation failures"

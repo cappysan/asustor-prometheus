@@ -1,0 +1,88 @@
+# Project metadata guidelines:
+#   https://peps.python.org/pep-0621/
+#
+# ------------------------------------------------------------------------------
+# Setup
+# ------------------------------------------------------------------------------
+name = "cappysan-prometheus"
+version = "3.8.0-r1"
+authors = [
+  {name = "Julien Lecomte", email = "julien@cappysan.dev"}
+]
+readme  = "README.md"
+description = "Asustor Prometheus application"
+license = "MIT"
+
+# ------------------------------------------------------------------------------
+# Other tools
+# ------------------------------------------------------------------------------
+[tool.bumpversion]
+current_version = "3.8.0-r1"
+parse = """(?x)
+  (?P<major>0|[1-9]\\d*)\\.
+  (?P<minor>0|[1-9]\\d*)\\.
+  (?P<patch>0|[1-9]\\d*)
+  (?:
+    -r                    # dash separator for pre-release section
+    (?P<seg_n>[1-9]\\d*)  # version number
+  )?                      # release section is optional
+"""
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+ignore_missing_files = false
+tag = true
+sign_tags = true
+tag_name = "{new_version}"
+tag_message = "Bump version from {current_version} to {new_version}"
+allow_dirty = false
+commit = true
+message = "Release version {new_version} (previous: {current_version})"
+moveable_tags = []
+commit_args = ""
+setup_hooks = []
+pre_commit_hooks = [
+  "precommit autoupdate",
+  "make pc",
+]
+post_commit_hooks = []
+
+serialize = [
+  "{major}.{minor}.{patch}-r{seg_n}"
+]
+
+[tool.bumpversion.parts.seg_n]
+first_value = "1"
+
+# .answers.yml contains the current version in "version"/"scaffold.version"
+[[tool.bumpversion.files]]
+filename = "apk/CONTROL/config.json"
+
+[[tool.bumpversion.files]]
+filename = ".answers.yml"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+
+
+[tool.codespell]
+# https://github.com/codespell-project/codespell/blob/main/README.rst
+#
+# Dictionary is updated when codespell is updated, nevertheless, it can
+# be found here: .venv/lib/python3.*/site-packages/codespell_lib/data/dictionary.txt
+skip = "*.pyc,.cache,.git,.tox,.venv,public"
+builtin = "clear,informal,rare,names"
+ignore-words = "support/codespell.exclude"
+ignore-multiline-regex = "# codespell: off\n.*# codespell: on\n"
+check-filenames = ""
+
+[tool.nitpick]
+style = [
+  # Ensure this project is up-to-date with template used to generate this template.
+  "https://gitlab.com/cappysan/scaffolds/asustor-template/-/raw/main/nitpick/upstream-version-check.toml",
+  #
+  "https://gitlab.com/cappysan/nitpick/-/raw/main/resources/nitpick.toml",
+  "https://gitlab.com/cappysan/nitpick/-/raw/main/resources/pre-commit.toml",
+]
+ignore_styles = []
