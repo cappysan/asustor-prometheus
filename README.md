@@ -2,6 +2,8 @@
 
 Asustor APK package for Prometheus, open-source systems monitoring and alerting toolkit.
 
+This package does not require docker.
+
 ## Table of contents
 1. [Installation](#installation)  
 2. [Support & Sponsorship](#support)  
