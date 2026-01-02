@@ -4,8 +4,8 @@ Changes relevant to the users of Cappysan's Asustor Prometheus APK are documente
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## 3.8.0-r1 - 2025-12-12
+## 3.8.0-r1 - 2026-01-02
 
 ### Added
 
-- First release
+- Initial release

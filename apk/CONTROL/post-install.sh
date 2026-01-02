@@ -1,34 +1,33 @@
 #!/usr/bin/env sh
+# SPDX-License-Identifier: MIT
 #
-APKG_PKG_NAME=cappysan-prometheus
+# ------------------------------------------------------------------------------
+# Save variables
 APKG_PKG_DIR=/usr/local/AppCentral/${APKG_PKG_NAME}
-
-if test "x${APKG_PKG_VER}" = x; then
-  echo "error: required env var APKG_PKG_VER not set" >&2
-  exit 1
-fi
-
-# Set all variables
-APKG_PKG_SHORT_NAME="${APKG_PKG_NAME#*-}"
 APKG_PKG_SHORT_VER="${APKG_PKG_VER%-*}"
-APKG_CFG_DIR=/share/Configuration/${APKG_PKG_SHORT_NAME}
-APKG_TAR_FILE=/tmp/${APKG_PKG_SHORT_NAME}.tar.xz
-export APKG_PKG_SHORT_NAME APKG_CFG_DIR APKG_PKG_VER APKG_PKG_SHORT_VER
-env | grep APKG > ${APKG_PKG_DIR}/.env.install
+APKG_CFG_DIR=/share/Configuration/prometheus
+APKG_TAR_FILE=/tmp/prometheus.tar.xz
+export APKG_CFG_DIR APKG_PKG_VER APKG_PKG_SHORT_VER
+env | grep APKG | grep -v " " | sort > ${APKG_PKG_DIR}/.env.install
 
 # Ensure permissions are limited to root user for the application folder.
-chown -R 0:0 ${APKG_PKG_DIR}
+chown -R root:root ${APKG_PKG_DIR}
+
+# Create a configuration folder for this application
+if test ! -d ${APKG_CFG_DIR}; then
+  mkdir -p ${APKG_CFG_DIR}
+  chown admin:root ${APKG_CFG_DIR}
+  chmod 750 ${APKG_CFG_DIR}
+fi
 
 # Download application
 URL="https://github.com/prometheus/prometheus/releases/download/v${APKG_PKG_SHORT_VER}/prometheus-${APKG_PKG_SHORT_VER}.linux-amd64.tar.gz"
 wget --progress none -O ${APKG_TAR_FILE} "${URL}" || exit 1
 
-cd ${APKG_PKG_DIR}
+# Replace application by new application
 tar --strip-components=1 -vxf ${APKG_TAR_FILE} -C "${APKG_PKG_DIR}"/ || exit 1
 rm -f ${APKG_TAR_FILE}
 
-# Create a user, and copy no-overwrite the configuration
-useradd --system --no-create-home --home-dir ${APKG_CFG_DIR}/ --gid nogroup --shell /bin/false ${APKG_PKG_SHORT_NAME}
 
 # Read the certificate and extract the domain, since there doesn't seem to be
 # an easy way to get configured FQDN (`hostname -f` returns same as `hostname`).
@@ -43,12 +42,13 @@ if test "x${as_cn}" != "xSupport"; then
   # We probably have a valid FQDN
   sed "s/localhost/${as_cn}/" -i conf.dist/file_sd_configs.d/prometheus.yml
 fi
+# Create a user, and copy no-overwrite the configuration
+useradd --system --no-create-home --home-dir ${APKG_CFG_DIR}/ --gid nogroup --shell /bin/false prometheus
 
-mkdir -p ${APKG_CFG_DIR}
+
+# Copy available configurations if they don't exist
 rsync -av --inplace --ignore-existing ${APKG_PKG_DIR}/conf.dist/ ${APKG_CFG_DIR}
-rm -f prometheus.yml
-
-chown -R ${APKG_PKG_SHORT_NAME}:root ${APKG_CFG_DIR}
+chown -R prometheus:root ${APKG_CFG_DIR}
 chmod 750 ${APKG_CFG_DIR}
 
 ${APKG_PKG_DIR}/renewal-hooks/deploy/prometheus

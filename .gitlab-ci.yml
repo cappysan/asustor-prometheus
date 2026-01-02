@@ -11,12 +11,8 @@ include:
   - ".gitlab/ci/workflow.yml"
   - ".gitlab/ci/stages.yml"
   - ".gitlab/ci/core.yml"
-
   - ".gitlab/ci/pre-commit.yml"
-
-
-  - ".gitlab/ci/releases.yml"
-  - ".gitlab/ci/pages.yml"
+  - ".gitlab/ci/python.yml"
 
 pre-commit:
   extends: .pre-commit

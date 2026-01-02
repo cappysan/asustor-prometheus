@@ -21,7 +21,7 @@ groups:
           summary: "Host {{ $labels.node }}, Prometheus configuration reload error"
 
       - alert: PrometheusTooManyRestarts
-        expr: changes(process_start_time_seconds{job=~"prometheus|pushgateway|alertmanager"}[2m]) > 4
+        expr: changes(process_start_time_seconds{job=~"prometheus"}[2m]) > 4
         for: 0m
         labels:
           severity: warning

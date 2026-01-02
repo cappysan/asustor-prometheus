@@ -1,4 +1,4 @@
-# Asustor - Prometheus
+# Cappysan's Asustor Prometheus APK
 
 Asustor APK package for Prometheus, open-source systems monitoring and alerting toolkit.
 
@@ -10,30 +10,25 @@ This package does not require docker.
 3. [License](#license)  
 4. [Links](#links)  
 
+
 ## Installation <a name="installation"></a>
 
 The APK application is available as a GitLab release, and on [https://asustor.cappysan.dev/](https://asustor.cappysan.dev/)
 
 The APK application is not available as an Asustor App Central application as Asustor does not accept headless programs.
 
-### Application Installation <a name="installation"></a>
 
-**Step 1**
+### Usage
 
-- Download the APK file from Cappysan's Asustor website ([https://asustor.cappysan.dev/2025/12/12/prometheus/](https://asustor.cappysan.dev/2025/12/12/prometheus/)  
-- Enter the Asustor App Center from your Asustor NAS user interface  
-- Enter the 'Management" tab in the App Center  
-- Enter the "Manual Install" left tab from the "Management" tab  
-- Select the previously downloaded file for the "Browse" input box  
-- Click "Upload" and follow further instructions from pop-up box  
+A brief usage guide can be found below. A more complete step-by-step guide is available on [https://blog.cappysan.dev](https://blog.cappysan.dev) in the Asustor section.
 
-**Step 2**
 
-In order to secure the newly created "Configuration" shared folder:
+### Installing
 
-- Enter the "Access Control" tab in the App Center  
-- Enter the "Shared folders" left tab from the "Access Control" tab  
-- Select the "Configuration" folder to allow only the required users to modify the configuration  
+- Download the APK file from Cappysan's Asustor website ([https://asustor.cappysan.dev/prometheus/](https://asustor.cappysan.dev/prometheus/)  
+- Install the package
+- A share folder named "Configuration" will be created. Configure it to only enable admins in read-write mode. Deny anonymous and user access.
+- Ensure you can modify files in the "Configuration/cerbot" with either SSH, a mount point, or the Asustor File Explorer.
 
 
 ### Configuration
@@ -73,7 +68,8 @@ Please refer to the upstream software documentation for details on their respect
 
 ## Links <a name="links"></a>
 
-  * Website: [https://asustor.cappysan.dev/](https://asustor.cappysan.dev/)
+  * Cappysan's Asustor Tutorials & Procedures: [https://blog.cappysan.dev/asustor/index.html](https://blog.cappysan.dev/asustor/index.html)
+  * Cappysan's Asustor applications website: [https://asustor.cappysan.dev/](https://asustor.cappysan.dev/)
   * GitLab: [https://gitlab.com/cappysan/asustor/prometheus](https://gitlab.com/cappysan/asustor/prometheus)
   * GitHub: [https://github.com/cappysan/asustor-prometheus](https://github.com/cappysan/asustor-prometheus)
   * Discord: [https://discord.gg/SsY3CAdp4Q](https://discord.gg/SsY3CAdp4Q)

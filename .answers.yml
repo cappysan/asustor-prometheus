@@ -7,7 +7,7 @@ answers:
   # File generated with mk-scaffold:
   #   cf. nitpick/scaffold-tpl-version-check.toml
   template_used: "https://gitlab.com/cappysan/scaffolds/asustor-template.git"
-  template_used_version: "1.0.0"
+  template_used_version: "1.1.0-r4"
 
   author: "Julien Lecomte"
   email: "julien@cappysan.dev"
@@ -16,18 +16,37 @@ answers:
 
   project_name: "Prometheus"
   project_slug: "cappysan-prometheus"
-  project_description: "Asustor Prometheus application"
-
   project_url: "https://gitlab.com/cappysan/asustor/prometheus"
-  documentation_url: ""
+  project_description: "Asustor Prometheus application"
+  project_path: "cappysan-prometheus"
+  project_wp_url: "https://asustor.cappysan.dev/prometheus/"
+
+  has_documentation: False
+  documentation_url: "https://example.com"
+  has_documentation_todo: False
+  encryption_key_url: "https://gitlab.com/user.gpg"
+
+  has_pages: False
+  has_pages_on_main: False
+  has_releases: False
+  has_changelog: True
+
+  user_name: "prometheus"
+  is_pipx: False
+  is_single_app: True
+  download_url: "https://github.com/prometheus/prometheus/releases/download/v${APKG_PKG_SHORT_VER}/prometheus-${APKG_PKG_SHORT_VER}.linux-amd64.tar.gz"
+  use_start_stop_daemon: True
+  has_port: True
+  has_adm_desktop: True
+  has_renewal_hook: True
 
   license: "MIT"
   version: "3.8.0-r1"
+  version_style: "semver-rev"
 
-  has_pages: False
   keep_placeholders: False
+  copyright_string: "Cappysan, Julien Lecomte, and contributors"
 
   # Hidden fields
   creation_year: "2025"
-  last_update: "2025-12-10 11:28:57"
-  copyright_string: "Cappysan, Julien Lecomte, and contributors"
+  last_update: "2026-01-02 16:04:25"

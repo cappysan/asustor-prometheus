@@ -1,26 +1,31 @@
 #!/usr/bin/env sh
+# SPDX-License-Identifier: MIT
 #
-APKG_PKG_NAME=cappysan-prometheus
-APKG_PKG_SHORT_NAME="${APKG_PKG_NAME#*-}"
-APKG_PKG_DIR=/usr/local/AppCentral/${APKG_PKG_NAME}
+. /usr/local/AppCentral/cappysan-prometheus/.env.install
+cd ${APKG_PKG_DIR:-/nonexistent} || exit 1
 
-cd ${APKG_PKG_DIR} || exit 1
-
+export HOME=/share/Configuration/prometheus
+export PID_FILE=/var/run/prometheus.pid
 if test -f /share/Configuration/${APKG_PKG_SHORT_NAME}/env; then
   source /share/Configuration/${APKG_PKG_SHORT_NAME}/env
 fi
-export HOME=/share/Configuration/${APKG_PKG_SHORT_NAME}
-export PID_FILE=/var/run/${APKG_PKG_SHORT_NAME}.pid
 
 export LISTEN_ADDRESS=${LISTEN_ADDRESS:-0.0.0.0:9090}
 export STORAGE_TSDB_PATH=${STORAGE_TSDB_PATH:-/share/Configuration/prometheus/data}
-export CONFIG_FILE=${CONFIG_FILE:-/share/Configuration/${APKG_PKG_SHORT_NAME}/prometheus.yml}
-export WEBCONFIG_FILE=${WEBCONFIG_FILE:-/share/Configuration/${APKG_PKG_SHORT_NAME}/web.yml}
+export CONFIG_FILE=${CONFIG_FILE:-/share/Configuration/prometheus/prometheus.yml}
+export WEBCONFIG_FILE=${WEBCONFIG_FILE:-/share/Configuration/prometheus/web.yml}
 
 # promtool isn't correctly linked during install since the file does not exist, fix that.
 # A prometheus configuration can be checked with the following command:
 #   promtool check config /share/Configuration/prometheus/prometheus.yml
 ln -sf -T /usr/local/AppCentral/cappysan-prometheus/promtool /usr/local/bin/promtool
+
+
+case $1 in
+  start)
+    touch "${APKG_CFG_DIR}/active"
+
+
 
 case $1 in
   start)
@@ -32,6 +37,10 @@ case $1 in
     ;;
 
   stop)
+    if test -f "${APKG_CFG_DIR}/active"; then                                                                         
+      rm -f "${APKG_CFG_DIR}/active"                                                                                  
+    fi                                                                                                                
+    
     if test -f ${PID_FILE}; then
       start-stop-daemon -K -p ${PID_FILE}
       rm -f ${PID_FILE}
@@ -47,8 +56,8 @@ case $1 in
     ;;
 
   restart)
-    ${0} stop
-    ${0} start
+    ./CONTROL/start-stop.sh stop
+    ./CONTROL/start-stop.sh start
     ;;
 
   *)

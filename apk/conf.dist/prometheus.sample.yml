@@ -33,8 +33,15 @@ rule_files:
   - "rules.d/*.yml"
 
 scrape_configs:
-  # This job monitors the prometheus builtin exporter
+  # This job monitors the grafana builtin exporter
   - job_name: "grafana"
+    metrics_path: /metrics
+    scheme: https
+    # basic_auth:
+    #   username: 'prometheus'
+    #   password: 'XXX'
+    # tls_config:
+    #   insecure_skip_verify: true
     file_sd_configs:
       - files:
         - "file_sd_configs.d/grafana.yml"
@@ -46,6 +53,13 @@ scrape_configs:
 
   # This job monitors the prometheus builtin exporter
   - job_name: "prometheus"
+    metrics_path: /metrics
+    scheme: https
+    # basic_auth:
+    #   username: 'prometheus'
+    #   password: 'XXX'
+    # tls_config:
+    #   insecure_skip_verify: true
     file_sd_configs:
       - files:
         - "file_sd_configs.d/prometheus.yml"
