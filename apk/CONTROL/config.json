@@ -8,7 +8,7 @@
     "maintainer": "Cappysan",
     "name": "Prometheus",
     "package": "cappysan-prometheus",
-    "version": "3.8.0-r1",
+    "version": "3.10.0-r1",
     "developer": "Cloud Native Computing Foundation",
     "website": "https://gitlab.com/cappysan/asustor/prometheus"
   },

@@ -1,0 +1,45 @@
+---
+# Prometheus configuration documentation:
+#   https://prometheus.io/docs/prometheus/latest/configuration/configuration
+#
+# In order to check the configuration before a restart:
+#   promtool check config /share/Configuration/prometheus/prometheus.yml
+#
+# In order to reload, either via API or kill:
+#   curl -XPOST -sSL example.com/-/reload
+#   /usr/local/AppCentral/cappysan-prometheus/CONTROL/start-stop.sh reload
+#
+global:
+  scrape_interval: 15s     # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  scrape_timeout: 10s      # scrape_timeout is set to the global default (10s).
+
+storage:
+  tsdb:
+    retention:
+      time: 15d
+      size: 100GB
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - "alerts.d/*.yml"
+  - "rules.d/*.yml"
+
+scrape_configs:
+  # This job monitors the prometheus builtin exporter
+  - job_name: "prometheus"
+    file_sd_configs:
+      - files:
+        - "file_sd_configs.d/prometheus.yml"
+    relabel_configs: &instance_relabel
+      - source_labels: [__address__]
+        target_label: instance
+        regex: "([^:]+)(:[0-9]+)?"
+        replacement: "${1}"
