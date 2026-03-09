@@ -37,10 +37,10 @@ case $1 in
     ;;
 
   stop)
-    if test -f "${APKG_CFG_DIR}/active"; then                                                                         
-      rm -f "${APKG_CFG_DIR}/active"                                                                                  
-    fi                                                                                                                
-    
+    if test -f "${APKG_CFG_DIR}/active"; then
+      rm -f "${APKG_CFG_DIR}/active"
+    fi
+
     if test -f ${PID_FILE}; then
       start-stop-daemon -K -p ${PID_FILE}
       rm -f ${PID_FILE}

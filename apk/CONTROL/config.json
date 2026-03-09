@@ -1,6 +1,6 @@
 {
   "general": {
-    "architecture": "any",
+    "architecture": "x86-64",
     "conflicts": [],
     "depends": [],
     "email": "julien@cappysan.dev",
