@@ -6,7 +6,7 @@
 # ------------------------------------------------------------------------------
 [project]
 name = "cappysan-prometheus"
-version = "3.10.0-r2"
+version = "3.10.0-r3"
 authors = [
   {name = "Julien Lecomte", email = "julien@cappysan.dev"}
 ]
@@ -24,7 +24,7 @@ Homepage = "https://gitlab.com/cappysan/asustor/prometheus"
 # Other tools
 # ------------------------------------------------------------------------------
 [tool.bumpversion]
-current_version = "3.10.0-r2"
+current_version = "3.10.0-r3"
 
 parse = """(?x)
   (?P<major>0|[1-9]\\d*)\\.
