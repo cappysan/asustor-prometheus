@@ -41,3 +41,10 @@ chown -R ${APKG_USER}:${APKG_GROUP} ${APKG_CFG_DIR}/backups
 rsync -a --inplace --ignore-existing ${APKG_PKG_DIR}/conf.dist/ ${APKG_CFG_DIR}
 chown -R ${APKG_USER}:${APKG_GROUP} ${APKG_CFG_DIR}
 chmod 750 ${APKG_CFG_DIR}
+
+if test -f /root/AppCentral/cappysan-certbot/bin/install-hooks; then
+  /root/AppCentral/cappysan-certbot/bin/install-hooks
+fi
+if test -f /root/AppCentral/cappysan-apache/bin/install-hooks; then
+  /root/AppCentral/cappysan-apache/bin/install-hooks
+fi
