@@ -11,6 +11,7 @@ include:
   - ".gitlab/ci/workflow.yml"
   - ".gitlab/ci/stages.yml"
   - ".gitlab/ci/core.yml"
+
   - ".gitlab/ci/pre-commit.yml"
   - ".gitlab/ci/python.yml"
 

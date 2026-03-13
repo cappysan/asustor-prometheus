@@ -24,13 +24,23 @@ export APKG_GROUP=${APKG_GROUP:-root}
 #   promtool check config /share/Configuration/prometheus/prometheus.yml
 ln -sf -T /usr/local/AppCentral/cappysan-prometheus/promtool /usr/local/bin/promtool
 
+cat /usr/builtin/etc/certificate/ssl.pem \
+    /usr/builtin/etc/certificate/ssl.crt   > /usr/local/AppCentral/cappysan-prometheus/chain.crt
+cp -f /usr/builtin/etc/certificate/ssl.key /usr/local/AppCentral/cappysan-prometheus/ssl.key
+chmod 600 /usr/local/AppCentral/cappysan-prometheus/ssl.key
+chown -R ${APKG_USER}:${APKG_GROUP} /usr/local/AppCentral/cappysan-prometheus/ssl.key
+
 mkdir -p "${STORAGE_TSDB_PATH}"
 chown -R ${APKG_USER}:${APKG_GROUP} "${STORAGE_TSDB_PATH}"
+
+# Build a full chain
+cat /usr/builtin/etc/certificate/ssl.pem \
+    /usr/builtin/etc/certificate/ssl.crt > /usr/local/AppCentral/cappysan-prometheus/ssl.crt
 
 case $1 in
   start)
     touch "${APKG_CFG_DIR}/active"
-    start-stop-daemon -S -b -m -p ${PID_FILE} -c ${APKG_USER}:${APKG_GROUP} -x "./prometheus" -- \
+    start-stop-daemon -S -b -m -p ${PID_FILE} -c ${APKG_USER}:nogroup -x "./prometheus" -- \
        --config.file=${CONFIG_FILE} --storage.tsdb.path=${STORAGE_TSDB_PATH} \
        --web.listen-address=${LISTEN_ADDRESS} \
        --web.config.file="${WEBCONFIG_FILE}" \
