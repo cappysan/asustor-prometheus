@@ -1,3 +1,4 @@
+# cf: https://samber.github.io/awesome-prometheus-alerts/rules#prometheus-self-monitoring-1
 ---
 groups:
   - name: PrometheusRules
@@ -11,7 +12,7 @@ groups:
         annotations:
           summary: "Host {{ $labels.node }}, Prometheus 'prometheus' scrape job missing"
 
-      - alert: PrometheusConfigReloadFailure
+      - alert: PrometheusConfigurationReloadFailure
         expr: prometheus_config_last_reload_successful != 1
         for: 0m
         labels:
@@ -88,7 +89,7 @@ groups:
           severity: critical
           app: prometheus.tsdb
         annotations:
-          summary: "Host {{ $labels.node }}, {{ $value }} Prometheus TSDB compactions failures"
+          summary: "Host {{ $labels.node }}, {{ $value }} Prometheus TSDB compaction failures"
 
       - alert: PrometheusTsdbHeadTruncationsFailed
         expr: increase(prometheus_tsdb_head_truncations_failed_total[1m]) > 0

@@ -10,8 +10,8 @@
 #   /usr/local/AppCentral/cappysan-prometheus/CONTROL/start-stop.sh reload
 #
 global:
-  scrape_interval: 15s     # Set the scrape interval to every 15 seconds. Default is every 1 minute.
-  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  scrape_interval: 15s     # Scrape interval is 15 seconds.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds.
   scrape_timeout: 10s      # scrape_timeout is set to the global default (10s).
 
 storage:
@@ -32,14 +32,5 @@ rule_files:
   - "alerts.d/*.yml"
   - "rules.d/*.yml"
 
-scrape_configs:
-  # This job monitors the prometheus builtin exporter
-  - job_name: "prometheus"
-    file_sd_configs:
-      - files:
-        - "file_sd_configs.d/prometheus.yml"
-    relabel_configs: &instance_relabel
-      - source_labels: [__address__]
-        target_label: instance
-        regex: "([^:]+)(:[0-9]+)?"
-        replacement: "${1}"
+scrape_config_files:
+  - "scrape_config_files.d/*.yml"
