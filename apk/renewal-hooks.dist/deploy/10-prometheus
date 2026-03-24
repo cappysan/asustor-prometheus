@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-#
-. /usr/local/AppCentral/cappysan-prometheus/.env.install
-cd ${APKG_PKG_DIR:-/nonexistent} || exit 1
-
-./CONTROL/start-stop.sh reload

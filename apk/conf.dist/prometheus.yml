@@ -33,4 +33,4 @@ rule_files:
   - "rules.d/*.yml"
 
 scrape_config_files:
-  - "scrape_config_files.d/*.yml"
+  - "jobs.d/*.yml"

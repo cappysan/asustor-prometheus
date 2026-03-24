@@ -10,9 +10,18 @@ export APKG_CFG_DIR APKG_PKG_VER APKG_PKG_SHORT_VER
 env | grep APKG | grep -v APKG_PKG_STATUS \
   | grep -v " " | sort > ${APKG_PKG_DIR}/.env.install
 
-${APKG_PKG_DIR}/CONTROL/common.sh
+cd ${APKG_PKG_DIR:-/nonexistent} || exit 1
+. ${APKG_PKG_DIR}/env
 
-# Download application
+
+# Permissions
+# ===========
+# Ensure permissions are limited to root user for the application folder.
+chown -R root:root ${APKG_PKG_DIR}
+
+
+# Download
+# ========
 APKG_TAR_FILE=/tmp/prometheus.tar.xz
 URL="https://github.com/prometheus/prometheus/releases/download/v${APKG_PKG_SHORT_VER}/prometheus-${APKG_PKG_SHORT_VER}.linux-amd64.tar.gz"
 wget --progress none -O ${APKG_TAR_FILE} "${URL}" || exit 1
@@ -21,4 +30,24 @@ wget --progress none -O ${APKG_TAR_FILE} "${URL}" || exit 1
 tar --strip-components=1 -vxf ${APKG_TAR_FILE} -C "${APKG_PKG_DIR}"/ || exit 1
 rm -f ${APKG_TAR_FILE}
 
+
+# User
+# ====
+useradd --system --no-create-home --home-dir ${APKG_CFG_DIR}/ --gid nogroup --shell /bin/false ${APKG_USER}
+
+
+# Configuration folder
+# ====================
+mkdir -p ${APKG_CFG_DIR}
+chown -R ${APKG_USER}:${APKG_GROUP} ${APKG_CFG_DIR}
+chmod 750 ${APKG_CFG_DIR}
+
+
+# Configuration
+# =============
+# Don't override files that could have been user modified.
+rsync -a --inplace --ignore-existing ${APKG_PKG_DIR}/conf.dist/ ${APKG_CFG_DIR}
+chown -R ${APKG_USER}:${APKG_GROUP} ${APKG_CFG_DIR}
+
+logger "[${WHAT}] Application installed."
 exit 0

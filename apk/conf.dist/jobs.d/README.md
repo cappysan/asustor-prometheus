@@ -1,14 +1,19 @@
+
+## Scrape Jobs
+
+Sample "full" configuration:
+
+~~~bash
 ---
 scrape_configs:
-  # This job monitors the prometheus builtin exporter
-  - job_name: "prometheus"
+  - job_name: "XXX"
     metrics_path: /metrics
     scheme: https
-    # basic_auth:
-    #   username: 'prometheus'
-    #   password: 'XXX'
-    # tls_config:
-    #   insecure_skip_verify: true
+    basic_auth:
+      username: 'prometheus'
+      password: 'XXX'
+    tls_config:
+      insecure_skip_verify: true
     file_sd_configs:
       - files:
         - "file_sd_configs.d/prometheus.yml"
@@ -17,3 +22,6 @@ scrape_configs:
         target_label: instance
         regex: "([^:]+)(:[0-9]+)?"
         replacement: "${1}"
+~~~
+
+## Targets
