@@ -4,11 +4,12 @@ Changes relevant to the users of Cappysan's Asustor Prometheus APK are documente
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## 3.10.0-r5 - 2026-03-11
+## 3.10.0-r9 - 2026-03-25
 
 ### Added
 
 - Call apache and certbot scripts if they exist
+- Document with a README.md
 
 
 ## 3.10.0-r4 - 2026-03-11

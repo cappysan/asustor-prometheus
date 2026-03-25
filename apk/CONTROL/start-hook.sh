@@ -23,7 +23,8 @@ ln -sf -T /usr/local/AppCentral/cappysan-prometheus/promtool /usr/local/bin/prom
 # Dependencies
 # ============
 if test "x${APKG_PKG_STATUS}" != "x"; then
-  export DOCKER_NO_RELOAD=1
+  export DOCKER_RELOAD=0
+  export CERTBOT_RELOAD=0
   /usr/local/AppCentral/cappysan-apache/CONTROL/start-stop.sh reload
 fi
 
