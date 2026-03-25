@@ -20,13 +20,20 @@ mkdir -p "${STORAGE_TSDB_PATH}"
 ln -sf -T /usr/local/AppCentral/cappysan-prometheus/promtool /usr/local/bin/promtool
 
 
+# Prometheus
+# ==========
+for as_dir in /share/Configuration/*/deps.d/prometheus/; do
+  if test -d "${as_dir}"; then
+    rsync -a --inplace --ignore-existing ${as_dir}/ ${APKG_CFG_DIR}/
+  fi
+done
+
+
 # Dependencies
 # ============
-if test "x${APKG_PKG_STATUS}" != "x"; then
-  export DOCKER_RELOAD=0
-  export CERTBOT_RELOAD=0
-  /usr/local/AppCentral/cappysan-apache/CONTROL/start-stop.sh reload
-fi
+export DOCKER_RELOAD=${DOCKER_RELOAD:-0}
+export CERTBOT_RELOAD=${CERTBOT_RELOAD:-0}
+/usr/local/AppCentral/cappysan-apache/CONTROL/start-stop.sh reload
 
 
 # Certificate
