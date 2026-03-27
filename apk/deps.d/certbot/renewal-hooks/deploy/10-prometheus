@@ -4,6 +4,7 @@
 . /usr/local/AppCentral/cappysan-prometheus/.env.install
 
 if test -f "${APKG_PKG_DIR}/active"; then
+  export CERTBOT_RELOAD=0
   ${APKG_PKG_DIR}/CONTROL/start-stop.sh reload
 fi
 

@@ -30,6 +30,8 @@ groups:
         annotations:
           summary: "Host {{ $labels.node }}, Prometheus has restarted more than twice in the last 5 minutes"
 
+
+  # ----------------------------------------------------------------------------
   - name: PrometheusRuleEvaluationRules
     rules:
       - alert: PrometheusRuleEvaluationFailures
@@ -60,6 +62,7 @@ groups:
         annotations:
           summary: "Host {{ $labels.node }}, Prometheus rule evaluation took more time than the scheduled interval"
           description: "Prometheus rule evaluation took more time than the scheduled interval. It indicates a slower storage backend access or too complex query."
+
 
   # ----------------------------------------------------------------------------
   - name: PrometheusTsdbRules

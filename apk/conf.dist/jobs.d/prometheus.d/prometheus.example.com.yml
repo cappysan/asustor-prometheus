@@ -1,5 +1,3 @@
 ---
 - targets:
     # - "prometheus.example.com:9090"
-  labels:
-    app: "prometheus"

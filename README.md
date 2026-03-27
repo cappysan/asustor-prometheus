@@ -6,42 +6,22 @@ This package does not require docker.
 
 ## Table of contents
 1. [Installation](#installation)  
-2. [Support & Sponsorship](#support)  
-3. [License](#license)  
-4. [Links](#links)  
+2. [Usage](#usage)  
+3. [Support & Sponsorship](#support)  
+4. [License](#license)  
+5. [Links](#links)  
 
 
 ## Installation <a name="installation"></a>
 
 The APK application is available as a GitLab release, and on [https://asustor.cappysan.dev/](https://asustor.cappysan.dev/)
 
-The APK application is not available as an Asustor App Central application as Asustor does not accept headless programs.
 
+## Usage <a name="usage"></a>
 
-### Usage
+In brief, modify the files in "/share/Configuration/prometheus" to your liking and restart the service.
 
-A brief usage guide can be found below. A more complete step-by-step guide is available on [https://blog.cappysan.dev](https://blog.cappysan.dev) in the Asustor section.
-
-
-### Installing
-
-- Download the APK file from Cappysan's Asustor website ([https://asustor.cappysan.dev/prometheus/](https://asustor.cappysan.dev/prometheus/)  
-- Install the package
-- A share folder named "Configuration" will be created. Configure it to only enable admins in read-write mode. Deny anonymous and user access.
-- Ensure you can modify files in the "Configuration/cerbot" with either SSH, a mount point, or the Asustor File Explorer.
-
-
-### Configuration
-
-By default, no configuration is required for Prometheus to operate.
-
-The Prometheus HTTP interface is available on port 9090.
-
-A HTTPS interface is preconfigured and available on port 9090 and replaces the HTTP interface.
-
-You may also use the Cappysan Certbot and Apache packages to serve Prometheus over the standard HTTPS port (443) and disable the default Prometheus ports if desired.
-
-Files within the `Configuration` shared folder can be modified via SSH or by exporting the shared folder through NFS, SMB, FTP, ...
+More documentation can be found at [https://blog.cappysan.dev/asustor/](https://blog.cappysan.dev/asustor/)
 
 
 ## Support & Sponsorship <a name="support"></a>
@@ -68,8 +48,8 @@ Please refer to the upstream software documentation for details on their respect
 
 ## Links <a name="links"></a>
 
-  * Cappysan's Asustor Tutorials & Procedures: [https://blog.cappysan.dev/asustor/index.html](https://blog.cappysan.dev/asustor/index.html)
-  * Cappysan's Asustor applications website: [https://asustor.cappysan.dev/](https://asustor.cappysan.dev/)
+  * Cappysan's Asustor Home Lab: [https://blog.cappysan.dev/asustor/](https://blog.cappysan.dev/asustor/)
+  * Cappysan's Asustor APKs: [https://asustor.cappysan.dev/](https://asustor.cappysan.dev/)
   * GitLab: [https://gitlab.com/cappysan/asustor/prometheus](https://gitlab.com/cappysan/asustor/prometheus)
   * GitHub: [https://github.com/cappysan/asustor-prometheus](https://github.com/cappysan/asustor-prometheus)
   * Discord: [https://discord.gg/SsY3CAdp4Q](https://discord.gg/SsY3CAdp4Q)
