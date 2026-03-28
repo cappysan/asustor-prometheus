@@ -24,4 +24,12 @@ scrape_configs:
         replacement: "${1}"
 ~~~
 
-## Targets
+## Labels
+
+The "app" label represents the app being monitored.
+
+The "service" label is the type of service monitored, the service provided by an app.
+
+For example, both Apache and Nginx would have a different "app" label (respectively "apache" and "nginx") but the same service ("http").
+
+Most services are only provided by a single app. For example, only Grafana (the app) serves the "grafana" service.

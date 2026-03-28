@@ -1,20 +1,20 @@
 ---
 scrape_configs:
-  # This job monitors the grafana builtin exporter
-  - job_name: "grafana"
+  # This job monitors the prometheus builtin exporter
+  - job_name: "node-exporter"
     metrics_path: /metrics
     scheme: https
     tls_config:
       insecure_skip_verify: false
     file_sd_configs:
       - files:
-          - "grafana.d/*.yml"
+          - "node-exporter.d/*.yml"
     relabel_configs: &instance_relabel
       - source_labels: [__address__]
         target_label: instance
         regex: "([^:]+)(:[0-9]+)?"
         replacement: "${1}"
       - target_label: app
-        replacement: grafana
+        replacement: node-exporter
       - target_label: service
-        replacement: grafana
+        replacement: exporter

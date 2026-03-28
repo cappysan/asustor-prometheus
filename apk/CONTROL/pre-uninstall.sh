@@ -7,8 +7,7 @@ cd ${APKG_PKG_DIR:-/nonexistent} || exit 1
 # Change the permissions before keeping the configuration
 if test "x${APKG_PKG_STATUS}" != "xupgrade"; then
   chown -R admin:root ${APKG_CFG_DIR}
-  # We can't remove the user since it's used by the exporters
-  # userdel prometheus
+  userdel prometheus
 fi
 
 exit 0

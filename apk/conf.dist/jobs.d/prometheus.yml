@@ -16,3 +16,5 @@ scrape_configs:
         replacement: "${1}"
       - target_label: app
         replacement: prometheus
+      - target_label: service
+        replacement: prometheus
