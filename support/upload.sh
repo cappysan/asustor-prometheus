@@ -12,7 +12,7 @@ KEYID="0x5F36B321543E36D9"
 as_file="$(ls -d *.apk | xargs)"
 gpg --no-default-keyring --default-key ${KEYID} --output ${as_file}.sig --detach-sig --sign ${as_file}
 
-as_pkg="$(grep -A1 project pyproject.toml | head -2 | tail -1 | cut -d= -f2 | xargs | cut -d- -f2)"
+as_pkg="$(grep -A1 project pyproject.toml | head -2 | tail -1 | cut -d= -f2 | xargs | cut -d- -f2-5)"
 rsync --ignore-existing -av cappysan-*_*.apk* ${as_ssh}:asustor-downloads/${as_pkg}/
 
 echo ""
