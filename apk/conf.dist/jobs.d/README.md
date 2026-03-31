@@ -22,14 +22,16 @@ scrape_configs:
         target_label: instance
         regex: "([^:]+)(:[0-9]+)?"
         replacement: "${1}"
+      - target_label: app
+        replacement: prometheus
+      - target_label: service
+        replacement: prometheus
 ~~~
 
-## Labels
+## Notes
 
-The "app" label represents the app being monitored.
+- If several scape configs are present, it's possible to use the &instance_relabel anchor.
 
-The "service" label is the type of service monitored, the service provided by an app.
+- The "app" label can serve several options. It can be used as a variable/filter in grafana, in alerts. Alerts are also often labeled with the prefix that is equal to the app variable.
 
-For example, both Apache and Nginx would have a different "app" label (respectively "apache" and "nginx") but the same service ("http").
-
-Most services are only provided by a single app. For example, only Grafana (the app) serves the "grafana" service.
+- "service" serves a similar purpose. It corresponds to what service the app provides. For example, app could be "apache" or "nginx", and service would still be "http" or "https".
