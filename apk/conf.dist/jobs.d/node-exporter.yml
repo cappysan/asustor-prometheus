@@ -1,6 +1,6 @@
 ---
 scrape_configs:
-  # This job monitors the prometheus builtin exporter
+  # This job monitors the system via the node exporter
   - job_name: "node-exporter"
     metrics_path: /metrics
     scheme: https

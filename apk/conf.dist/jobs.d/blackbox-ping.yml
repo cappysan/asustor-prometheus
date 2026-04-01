@@ -1,0 +1,21 @@
+---
+# cf: https://github.com/prometheus/blackbox_exporter?tab=readme-ov-file
+#
+scrape_configs:
+  # This job monitors the blackbox ping targets
+  - job_name: "blackbox-ping"
+    metrics_path: /probe
+    params:
+      module: [icmp_ipv4]
+    file_sd_configs:
+      - files:
+          - "blackbox-ping.d/*.yml"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115 # Change this to the blackbox exporter's real hostname:port.
+      - target_label: service
+        replacement: ping

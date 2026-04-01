@@ -1,0 +1,27 @@
+---
+# cf: https://github.com/prometheus/blackbox_exporter?tab=readme-ov-file
+#
+scrape_configs:
+  # This job monitors the blackbox http targets
+  - job_name: "blackbox-http"
+    metrics_path: /probe
+    params:
+      module: [http_ipv4_get_2xx]
+    file_sd_configs:
+      - files:
+          - "blackbox-http.d/*.yml"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__address__]
+        target_label: url
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115 # Change this to the blackbox exporter's real hostname:port.
+      - source_labels: [instance]
+        target_label: instance
+        regex: "^https?://([^:/]+)(:[0-9]+)?(/.*)?"
+        replacement: "${1}"
+      - target_label: service
+        replacement: http

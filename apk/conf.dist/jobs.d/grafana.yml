@@ -1,6 +1,6 @@
 ---
 scrape_configs:
-  # This job monitors the grafana builtin exporter
+  # This job monitors grafana
   - job_name: "grafana"
     metrics_path: /metrics
     scheme: https

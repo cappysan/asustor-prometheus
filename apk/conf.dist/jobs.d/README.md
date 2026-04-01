@@ -32,6 +32,6 @@ scrape_configs:
 
 - If several scape configs are present, it's possible to use the &instance_relabel anchor.
 
-- The "app" label can serve several options. It can be used as a variable/filter in grafana, in alerts. Alerts are also often labeled with the prefix that is equal to the app variable.
+- The "app" label can serve several goals. It can be used as a variable/filter in grafana, or in alerts. Alerts are also often labeled with the prefix that is equal to the app variable.
 
-- "service" serves a similar purpose. It corresponds to what service the app provides. For example, app could be "apache" or "nginx", and service would still be "http" or "https".
+- "service" serves a similar purpose. It corresponds to what service the app provides. For example, service is both "exporter" for node-exporter and blackbox-exporter, but the "app" values are different.

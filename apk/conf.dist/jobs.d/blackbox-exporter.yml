@@ -1,6 +1,6 @@
 ---
 scrape_configs:
-  # This job monitors the blackbox exporter itself, not it's targets
+  # This job monitors the blackbox exporter app itself, not it's targets
   - job_name: "blackbox-exporter"
     metrics_path: /metrics
     scheme: https
