@@ -10,4 +10,5 @@ if test "x${APKG_PKG_STATUS}" != "xupgrade"; then
   userdel prometheus
 fi
 
+# ------------------------------------------------------------------------------
 exit 0

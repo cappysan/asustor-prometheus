@@ -3,7 +3,7 @@ scrape_configs:
   # This job monitors the system via the node exporter
   - job_name: "node-exporter"
     metrics_path: /metrics
-    scheme: https
+    scheme: http
     tls_config:
       insecure_skip_verify: false
     file_sd_configs:
@@ -16,5 +16,3 @@ scrape_configs:
         replacement: "${1}"
       - target_label: app
         replacement: node-exporter
-      - target_label: service
-        replacement: exporter

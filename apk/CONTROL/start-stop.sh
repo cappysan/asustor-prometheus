@@ -1,9 +1,12 @@
 #!/usr/bin/env sh
 # SPDX-License-Identifier: MIT
 #
+# ------------------------------------------------------------------------------
 . /usr/local/AppCentral/cappysan-prometheus/.env.install
 cd ${APKG_PKG_DIR:-/nonexistent} || exit 1
-. ${APKG_PKG_DIR}/env
+if test -f ${APKG_PKG_DIR}/env; then
+  . ${APKG_PKG_DIR}/env
+fi
 
 export PID_FILE=/var/run/prometheus.pid
 if test -f ${HOME}/env; then

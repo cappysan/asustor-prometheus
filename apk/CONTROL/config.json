@@ -2,15 +2,34 @@
   "general": {
     "architecture": "x86-64",
     "conflicts": [],
-    "depends": [],
+    "depends": [
+      "python3(>=3.10.0)"
+    ],
     "email": "julien@cappysan.dev",
     "firmware": "5.0.0",
     "maintainer": "Cappysan",
     "name": "Prometheus",
     "package": "cappysan-prometheus",
     "version": "3.10.0-r14",
-    "developer": "Cloud Native Computing Foundation",
+    "developer": "Cappysan",
     "website": "https://gitlab.com/cappysan/asustor/prometheus"
+  },
+  "adm-desktop": {
+    "app": {
+      "type": "internal",
+      "js": [
+        "prometheus.js"
+      ],
+      "css": [
+        "prometheus.css"
+      ],
+      "module": "AS.ARC.apps.prometheus.main",
+      "langTag": "PROMETHEUS"
+    },
+    "privilege": {
+      "accessible": "administrators",
+      "customizable": false
+    }
   },
   "register": {
     "share-folder": [
@@ -20,6 +39,7 @@
       }
     ],
     "boot-priority": {
+      "x-comment": "docker-ce start order is 65",
       "start-order": 70,
       "stop-order": 30
     },

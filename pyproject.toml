@@ -5,6 +5,8 @@
 # Setup
 # ------------------------------------------------------------------------------
 [project]
+dynamic = ["dependencies"]
+
 name = "cappysan-prometheus"
 version = "3.10.0-r14"
 authors = [
@@ -14,11 +16,9 @@ readme  = "README.md"
 description = "Asustor Prometheus application"
 license = "MIT"
 
+
 [project.urls]
-
 Homepage = "https://gitlab.com/cappysan/asustor/prometheus"
-
-
 
 # ------------------------------------------------------------------------------
 # Other tools
@@ -32,6 +32,7 @@ parse = """(?x)
   (?P<patch>0|[1-9]\\d*)
   -r(?P<rev>0|[1-9]\\d*)
 """
+serialize = [ "{major}.{minor}.{patch}-r{rev}" ]
 
 search = "{current_version}"
 replace = "{new_version}"
@@ -49,29 +50,25 @@ moveable_tags = []
 commit_args = ""
 setup_hooks = []
 pre_commit_hooks = [
+
   "precommit autoupdate",
+
   "make pc",
 ]
 post_commit_hooks = []
 
-
-serialize = [
-  "{major}.{minor}.{patch}-r{rev}",
-]
-
 [tool.bumpversion.parts.rev]
 first_value = "1"
 
-[[tool.bumpversion.files]]
-filename = "apk/CONTROL/config.json"
 
-# .answers.yml contains the current version in "version"/"scaffold.version"
 [[tool.bumpversion.files]]
 filename = ".answers.yml"
 
-# pyproject.toml contains the current version in "tool.bumpversion.current_version"
 [[tool.bumpversion.files]]
 filename = "pyproject.toml"
+
+[[tool.bumpversion.files]]
+filename = "apk/CONTROL/config.json"
 
 
 [tool.codespell]
@@ -84,14 +81,3 @@ builtin = "clear,informal,rare,names"
 ignore-words = "support/codespell.exclude"
 ignore-multiline-regex = "# codespell: off\n.*# codespell: on\n"
 check-filenames = ""
-
-
-[tool.nitpick]
-style = [
-  # Ensure this project is up-to-date with template used to generate this template.
-  "https://gitlab.com/cappysan/scaffolds/asustor-template/-/raw/main/nitpick/upstream-version-check.toml",
-  #
-  "https://gitlab.com/cappysan/nitpick/-/raw/main/resources/nitpick.toml",
-  "https://gitlab.com/cappysan/nitpick/-/raw/main/resources/pre-commit.toml",
-]
-ignore_styles = []

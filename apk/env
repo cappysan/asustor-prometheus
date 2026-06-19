@@ -5,13 +5,12 @@ function logger() {
   syslog --log 0 --level 0 --user SYSTEM --event "${@}"
 }
 
-
 WHAT=Prometheus
-export HOME=/share/Configuration/prometheus
 
 # User
 # ====
-APKG_USER=prometheus
-APKG_GROUP=root
+export APKG_USER=prometheus
+export APKG_GROUP=root
+export HOME=/share/Configuration/prometheus
 
 # vim: ft=sh
