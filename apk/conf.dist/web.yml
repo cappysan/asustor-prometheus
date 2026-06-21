@@ -8,6 +8,8 @@ tls_server_config:
 
 # Basic auth documentation:
 #   https://prometheus.io/docs/guides/basic-auth/
+#
 # Here, default user would be "prometheus", and password would be "prometheus"
-#basic_auth_users:
-#  prometheus: "$2a$12$uY4zyey7KunMdv1QIF8kOudpNnixBNVifkBtB60AR1no4sKn5.xXC"
+#
+# basic_auth_users:
+#   prometheus: "$2a$12$uY4zyey7KunMdv1QIF8kOudpNnixBNVifkBtB60AR1no4sKn5.xXC"

@@ -24,7 +24,7 @@ ln -sf -T /usr/local/AppCentral/cappysan-prometheus/promtool /usr/local/bin/prom
 # ==========
 for as_dir in /share/Configuration/*/deps.d/prometheus/; do
   if test -d "${as_dir}"; then
-    rsync -a --inplace --ignore-existing ${as_dir}/ ${APKG_CFG_DIR}/
+    rsync -a --inplace ${as_dir}/ ${APKG_CFG_DIR}/
   fi
 done
 

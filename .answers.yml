@@ -13,7 +13,7 @@ answers:
   - project_name: "cappysan-prometheus"
   - project_slug: "cappysan-prometheus"
   - project_url: "https://gitlab.com/cappysan/asustor/prometheus"
-  - project_description: "Asustor Prometheus application"
+  - project_description: "Open-source monitoring system with a dimensional data model, flexible query language, efficient time series database and modern alerting approach."
 
   - has_documentation: False
   - documentation_url: ""

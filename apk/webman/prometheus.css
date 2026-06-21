@@ -1,0 +1,13 @@
+.app-cappysan-prometheus .x-fieldset-header-text {
+    font-weight: bold !important;
+}
+
+.prometheus-btn-white {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border-color: #d0d0d0 !important;
+    color: #333333 !important;
+}
+.prometheus-btn-white:hover {
+    background-color: #f5f5f5 !important;
+}
