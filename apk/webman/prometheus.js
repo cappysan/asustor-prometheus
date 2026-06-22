@@ -45,9 +45,10 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             store: Ext.create('Ext.data.ArrayStore', {
                 fields: ['title', 'tabId'],
                 data: [
-                    [_S('PROMETHEUS', 'TAB_SETTINGS'),   'settings'],
-                    [_S('PROMETHEUS', 'TAB_PROMETHEUS'), 'prometheus'],
-                    [_S('PROMETHEUS', 'TAB_APACHE'),     'apache']
+                    [_S('PROMETHEUS', 'TAB_SETTINGS'),      'settings'],
+                    [_S('PROMETHEUS', 'TAB_PROMETHEUS'),    'prometheus'],
+                    [_S('PROMETHEUS', 'TAB_APACHE'),        'apache'],
+                    [_S('PROMETHEUS', 'TAB_NODE_EXPORTER'), 'node-exporter']
                 ]
             }),
             hideHeaders: true,
@@ -57,14 +58,15 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                 flex:     1,
                 renderer: function (v, metadata, record) {
                     var icons = {
-                        settings:   AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-settings.png'),
-                        prometheus: AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-prometheus.png'),
-                        apache:     AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-apache.png')
+                        settings:        AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-settings.png'),
+                        prometheus:      AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-prometheus.png'),
+                        apache:          AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-apache.png'),
+                        'node-exporter': AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-node-exporter.png')
                     };
                     var iconUrl = icons[record.data.tabId] || icons.settings;
                     return '<div class="fn-block">' +
                            '<div class="fn-icon" style="background-image:url(' + iconUrl + ');background-repeat:no-repeat;background-position:center center;background-size:contain;"></div>' +
-                           '<div class="fn-title" style="width:130px;opacity:1;">' + record.data.title + '</div>' +
+                           '<div class="fn-title" style="width:150px;opacity:1;">' + record.data.title + '</div>' +
                            '<div class="x-clear"></div>' +
                            '</div>';
                 }
@@ -93,9 +95,10 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             success: function (json) {
                 fn.win.el.unmask();
                 cardPanel.removeAll();
-                if (tabId === 'settings')   { fn.renderSettingsTab(cardPanel, json); }
-                if (tabId === 'prometheus') { fn.renderPrometheusTab(cardPanel, json); }
-                if (tabId === 'apache')     { fn.renderApacheTab(cardPanel, json); }
+                if (tabId === 'settings')      { fn.renderSettingsTab(cardPanel, json); }
+                if (tabId === 'prometheus')    { fn.renderPrometheusTab(cardPanel, json); }
+                if (tabId === 'apache')        { fn.renderApacheTab(cardPanel, json); }
+                if (tabId === 'node-exporter') { fn.renderNodeExporterTab(cardPanel, json); }
             },
             failure: function (json) {
                 fn.win.el.unmask();
@@ -522,6 +525,211 @@ Ext.define('AS.ARC.apps.prometheus.core', {
         });
     },
 
+    /* ── Node Exporter tab ──────────────────────────────────────────────── */
+    renderNodeExporterTab: function (cardPanel, json) {
+        var fn         = this,
+            labelWidth = 200;
+
+        var store = Ext.create('Ext.data.Store', {
+            fields: ['target'],
+            data:   Ext.Array.map(json.targets || [], function (t) { return { target: t }; })
+        });
+
+        var grid = Ext.create('Ext.grid.Panel', {
+            itemId:  'neTargetsGrid',
+            store:   store,
+            border:  false,
+            anchor:  '100%',
+            height:  200,
+            columns: [{
+                text:      _S('PROMETHEUS', 'COL_NE_TARGET'),
+                dataIndex: 'target',
+                flex:      1
+            }],
+            dockedItems: [{
+                xtype: 'toolbar',
+                dock:  'top',
+                items: [{
+                    text:    _S('PROMETHEUS', 'BTN_ADD'),
+                    handler: function () { fn.showTargetPopup('add', null, store); }
+                }, {
+                    text:     _S('PROMETHEUS', 'BTN_MODIFY'),
+                    itemId:   'neModifyBtn',
+                    disabled: true,
+                    handler: function () {
+                        var sel = grid.getSelectionModel().getSelection();
+                        if (sel.length) { fn.showTargetPopup('modify', sel[0], store); }
+                    }
+                }, {
+                    text:     _S('PROMETHEUS', 'BTN_DELETE'),
+                    itemId:   'neDeleteBtn',
+                    disabled: true,
+                    handler: function () {
+                        var sel = grid.getSelectionModel().getSelection();
+                        if (sel.length) { store.remove(sel); }
+                    }
+                }]
+            }],
+            listeners: {
+                selectionchange: function (model, sel) {
+                    var has = sel.length > 0;
+                    grid.down('#neModifyBtn').setDisabled(!has);
+                    grid.down('#neDeleteBtn').setDisabled(!has);
+                }
+            }
+        });
+
+        cardPanel.add(Ext.create('Ext.panel.Panel', {
+            cls:        'as-page-panel app-cappysan-prometheus',
+            border:     false,
+            layout:     'anchor',
+            autoScroll: true,
+            defaults:   { anchor: '100%' },
+            items: [{
+                xtype:    'fieldset',
+                title:    _S('PROMETHEUS', 'SECTION_NODE_EXPORTER_SETTINGS'),
+                defaults: { anchor: '100%', msgTarget: AS.ARC.config.msgTarget },
+                items: [{
+                    xtype:      'displayfield',
+                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_JOB_NAME')),
+                    labelWidth: labelWidth,
+                    value:      'node-exporter'
+                }, {
+                    xtype:      'textfield',
+                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_METRICS_PATH')),
+                    labelWidth: labelWidth,
+                    itemId:     'neMetricsPath',
+                    emptyText:  '/metrics',
+                    value:      json.metrics_path || ''
+                }, {
+                    xtype:      'combobox',
+                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_SCHEME')),
+                    labelWidth: labelWidth,
+                    itemId:     'neScheme',
+                    store:      ['http', 'https'],
+                    editable:   false,
+                    value:      json.scheme || 'http'
+                }, {
+                    xtype:      'combobox',
+                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_INSECURE_SKIP_VERIFY')),
+                    labelWidth: labelWidth,
+                    itemId:     'neInsecureSkipVerify',
+                    store:      ['false', 'true'],
+                    editable:   false,
+                    value:      json.insecure_skip_verify || 'false'
+                }]
+            }, {
+                xtype:    'fieldset',
+                title:    _S('PROMETHEUS', 'SECTION_NODE_EXPORTER_TARGETS'),
+                defaults: { anchor: '100%' },
+                items:    [grid]
+            }],
+            dockedItems: [{
+                xtype: 'toolbar',
+                dock:  'bottom',
+                ui:    'footer',
+                items: [
+                    { xtype: 'component', flex: 1 },
+                    {
+                        xtype:   'button',
+                        text:    _S('PROMETHEUS', 'BTN_RELOAD'),
+                        cls:     'prometheus-btn-white',
+                        handler: function () { fn.reloadDaemon(); }
+                    },
+                    {
+                        xtype:   'button',
+                        text:    _S('COMMON', 'APPLY'),
+                        handler: function () { fn.saveNodeExporterTab(); }
+                    }
+                ]
+            }]
+        }));
+    },
+
+    showTargetPopup: function (mode, record, store) {
+        var fn       = this,
+            isModify = (mode === 'modify');
+
+        fn.targetPopup = Ext.create('AS.ARC.msgWindow', {
+            parentWin: fn.win,
+            title:     isModify ? _S('PROMETHEUS', 'TITLE_MODIFY_TARGET') : _S('PROMETHEUS', 'TITLE_ADD_TARGET'),
+            width:     550,
+            height:    200,
+            iconType:  'info',
+            asItems: [{
+                xtype:      'textfield',
+                fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_TARGET_HOST')),
+                itemId:     'popupTarget',
+                labelWidth: 60,
+                style:      'width: auto;',
+                emptyText:  _S('PROMETHEUS', 'HINT_NE_TARGET_HOST'),
+                value:      isModify ? record.get('target') : ''
+            }],
+            fbar: [{
+                text:    _S('COMMON', 'OK'),
+                handler: function () {
+                    var fld = fn.targetPopup.down('#popupTarget');
+                    if (!fld) { return; }
+
+                    var val = Ext.String.trim(fld.getValue());
+
+                    if (!val || /^https?:\/\//i.test(val) || !/^[^:]+:\d+$/.test(val)) {
+                        fld.markInvalid(_S('PROMETHEUS', 'ERR_TARGET_FORMAT'));
+                        return;
+                    }
+
+                    if (isModify) {
+                        record.set('target', val);
+                    } else {
+                        store.add({ target: val });
+                    }
+                    fn.targetPopup.close();
+                }
+            }, {
+                text:    _S('COMMON', 'CANCEL'),
+                handler: function () { fn.targetPopup.close(); }
+            }]
+        });
+
+        fn.targetPopup.show();
+    },
+
+    saveNodeExporterTab: function () {
+        var fn                 = this,
+            metricsPath        = fn.win.down('#neMetricsPath'),
+            scheme             = fn.win.down('#neScheme'),
+            insecureSkipVerify = fn.win.down('#neInsecureSkipVerify'),
+            grid               = fn.win.down('#neTargetsGrid');
+
+        var targets = [];
+        if (grid) {
+            grid.getStore().each(function (rec) {
+                var t = Ext.String.trim(rec.get('target'));
+                if (t) { targets.push(t); }
+            });
+        }
+
+        fn.win.el.mask(_S('COMMON', 'APPLYING'));
+        AS.ARC.ajax({
+            url:    AS.ARC.util.getApiUrlWithSid(fn.apiUrl, { act: 'set', tab: 'node-exporter' }),
+            method: 'post',
+            params: {
+                metrics_path:         metricsPath        ? (metricsPath.getValue()        || '/metrics') : '/metrics',
+                scheme:               scheme             ? (scheme.getValue()             || 'http')     : 'http',
+                insecure_skip_verify: insecureSkipVerify ? (insecureSkipVerify.getValue() || 'false')    : 'false',
+                targets:              targets.join(',')
+            },
+            success: function () {
+                fn.win.el.unmask();
+                fn.switchTab('node-exporter');
+            },
+            failure: function (json) {
+                fn.win.el.unmask();
+                AS.ARC.util.showMsgWindow({ 5000: _S('COMMON', 'SESSION_TIMEOUT') }, json, fn.win);
+            }
+        });
+    },
+
     /* ── Layout ─────────────────────────────────────────────────────────── */
     getMainPanel: function () {
         var fn = this;
@@ -535,7 +743,7 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                 itemId: 'westPanel',
                 cls:    'as-selector-panel',
                 border: false,
-                width:  150,
+                width:  170,
                 layout: 'fit',
                 items:  [fn.getNavGrid()]
             }, {

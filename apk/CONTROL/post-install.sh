@@ -33,11 +33,6 @@ tar --strip-components=1 -vxf ${APKG_TAR_FILE} -C "${APKG_PKG_DIR}"/ || exit 1
 rm -f ${APKG_TAR_FILE}
 
 
-# User
-# ====
-useradd --system --no-create-home --home-dir ${APKG_CFG_DIR}/ --gid nogroup --shell /bin/false ${APKG_USER}
-
-
 # Configuration folder
 # ====================
 mkdir -p ${APKG_CFG_DIR}

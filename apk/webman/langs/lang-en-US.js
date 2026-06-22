@@ -34,3 +34,21 @@ _AS_STRINGS.PROMETHEUS.LABEL_APACHE_FQDN = 'Server FQDN';
 _AS_STRINGS.PROMETHEUS.LABEL_APACHE_PLACEHOLDERS = 'Available placeholders: ${hostname}, ${domain}';
 _AS_STRINGS.PROMETHEUS.LABEL_APACHE_REDIRECT = 'HTTP redirection';
 _AS_STRINGS.PROMETHEUS.LABEL_APACHE_PROXY_TO = 'HTTPS proxy';
+
+/* Node Exporter tab */
+_AS_STRINGS.PROMETHEUS.TAB_NODE_EXPORTER              = 'node-exporter';
+_AS_STRINGS.PROMETHEUS.SECTION_NODE_EXPORTER_SETTINGS = 'Settings';
+_AS_STRINGS.PROMETHEUS.SECTION_NODE_EXPORTER_TARGETS  = 'Targets';
+_AS_STRINGS.PROMETHEUS.LABEL_NE_JOB_NAME              = 'job_name';
+_AS_STRINGS.PROMETHEUS.LABEL_NE_METRICS_PATH          = 'metrics_path';
+_AS_STRINGS.PROMETHEUS.LABEL_NE_SCHEME                = 'scheme';
+_AS_STRINGS.PROMETHEUS.LABEL_NE_INSECURE_SKIP_VERIFY  = 'tls_config.insecure_skip_verify';
+_AS_STRINGS.PROMETHEUS.COL_NE_TARGET                  = 'Target';
+_AS_STRINGS.PROMETHEUS.BTN_ADD                        = 'Add';
+_AS_STRINGS.PROMETHEUS.BTN_MODIFY                     = 'Modify';
+_AS_STRINGS.PROMETHEUS.BTN_DELETE                     = 'Delete';
+_AS_STRINGS.PROMETHEUS.TITLE_ADD_TARGET               = 'Add Target';
+_AS_STRINGS.PROMETHEUS.TITLE_MODIFY_TARGET            = 'Modify Target';
+_AS_STRINGS.PROMETHEUS.LABEL_NE_TARGET_HOST           = 'Target';
+_AS_STRINGS.PROMETHEUS.HINT_NE_TARGET_HOST            = 'hostname:port (e.g. nas.example.com:9100)';
+_AS_STRINGS.PROMETHEUS.ERR_TARGET_FORMAT              = 'Enter a valid target: hostname:port (no http:// prefix)';
