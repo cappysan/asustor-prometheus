@@ -10,7 +10,7 @@
     "maintainer": "Cappysan",
     "name": "Prometheus",
     "package": "cappysan-prometheus",
-    "version": "3.10.0-r14",
+    "version": "3.10.0-r36",
     "developer": "Cappysan",
     "website": "https://gitlab.com/cappysan/asustor/prometheus"
   },
