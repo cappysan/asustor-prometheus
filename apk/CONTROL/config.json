@@ -16,14 +16,18 @@
   },
   "adm-desktop": {
     "app": {
-      "port": 9090,
-      "protocol": "http",
-      "type": "custom",
-      "http_port": 9090,
-      "url": "/"
+      "type": "internal",
+      "js": [
+        "prometheus.js"
+      ],
+      "css": [
+        "prometheus.css"
+      ],
+      "module": "AS.ARC.apps.prometheus.main",
+      "langTag": "PROMETHEUS"
     },
     "privilege": {
-      "accessible": "admin",
+      "accessible": "administrators",
       "customizable": false
     }
   },
@@ -46,6 +50,19 @@
       "/bin": [
         "promtool"
       ]
+    }
+  },
+  "adm-desktop": {
+    "app": {
+      "port": 9090,
+      "protocol": "http",
+      "type": "custom",
+      "http_port": 9090,
+      "url": "/"
+    },
+    "privilege": {
+      "accessible": "users",
+      "customizable": true
     }
   }
 }
