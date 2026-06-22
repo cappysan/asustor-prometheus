@@ -10,21 +10,25 @@
     "maintainer": "Cappysan",
     "name": "Prometheus",
     "package": "cappysan-prometheus",
-    "version": "3.12.0-r40",
+    "version": "3.10.0-r14",
     "developer": "Cappysan",
     "website": "https://gitlab.com/cappysan/asustor/prometheus"
   },
   "adm-desktop": {
     "app": {
-      "port": 9090,
-      "protocol": "http",
-      "type": "custom",
-      "http_port": 9090,
-      "url": "/"
+      "type": "internal",
+      "js": [
+        "prometheus.js"
+      ],
+      "css": [
+        "prometheus.css"
+      ],
+      "module": "AS.ARC.apps.prometheus.main",
+      "langTag": "PROMETHEUS"
     },
     "privilege": {
-      "accessible": "users",
-      "customizable": true
+      "accessible": "administrators",
+      "customizable": false
     }
   },
   "register": {
