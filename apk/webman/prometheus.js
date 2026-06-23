@@ -531,20 +531,24 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             labelWidth = 200;
 
         var store = Ext.create('Ext.data.Store', {
-            fields: ['target'],
-            data:   Ext.Array.map(json.targets || [], function (t) { return { target: t }; })
+            pageSize: 5,
+            fields:   ['target'],
+            data:     Ext.Array.map(json.targets || [], function (t) { return { target: t }; })
         });
 
         var grid = Ext.create('Ext.grid.Panel', {
-            itemId:  'neTargetsGrid',
-            store:   store,
-            border:  false,
-            anchor:  '100%',
-            height:  200,
+            itemId:          'neTargetsGrid',
+            store:           store,
+            border:          false,
+            sortableColumns: false,
+            style: {
+                border: '#BBB 1px solid'
+            },
             columns: [{
-                text:      _S('PROMETHEUS', 'COL_NE_TARGET'),
-                dataIndex: 'target',
-                flex:      1
+                header:       _S('PROMETHEUS', 'COL_NE_TARGET'),
+                dataIndex:    'target',
+                menuDisabled: true,
+                flex:         1
             }],
             dockedItems: [{
                 xtype: 'toolbar',
@@ -570,6 +574,9 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                     }
                 }]
             }],
+            bbar: Ext.create('AS.ARC.pagingToolbar', {
+                store: store
+            }),
             listeners: {
                 selectionchange: function (model, sel) {
                     var has = sel.length > 0;
