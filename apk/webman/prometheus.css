@@ -11,3 +11,8 @@
 .prometheus-btn-white:hover {
     background-color: #f5f5f5 !important;
 }
+
+.prometheus-web-yml-editor textarea {
+    font-family: "Lucida Console", "Courier New", Courier, monospace !important;
+    font-size:   13px !important;
+}

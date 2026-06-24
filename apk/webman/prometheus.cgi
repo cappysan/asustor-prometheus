@@ -202,6 +202,24 @@ PYEOF
                 printf '%s' "$RESULT"
                 ;;
 
+            web-configuration)
+                WEB_YML="${CFG_DIR}/web.yml"
+                export _WEB_YML="$WEB_YML"
+                RESULT=$("$PYTHON" - << 'PYEOF'
+import json, os
+path = os.environ.get('_WEB_YML', '')
+try:
+    with open(path) as f:
+        content = f.read()
+except Exception:
+    content = ''
+print(json.dumps({'success': True, 'web_yml': content}))
+PYEOF
+)
+                printf 'Content-Type: application/json\r\n\r\n'
+                printf '%s' "$RESULT"
+                ;;
+
             apache)
                 A_HOSTNAME="prometheus"
                 A_FQDN='${hostname}.${domain}'
@@ -237,30 +255,14 @@ PYEOF
             node-exporter)
                 NODE_EXPORTER_YML="${CFG_DIR}/jobs.d/node-exporter.yml"
                 NODE_EXPORTER_D="${CFG_DIR}/jobs.d/node-exporter.d"
-                NODE_EXPORTER_TARGETS="${NODE_EXPORTER_D}/prometheus.yml"
+                NODE_EXPORTER_TARGETS="${NODE_EXPORTER_D}/node-exporter-http.yml"
                 export _NODE_EXPORTER_YML="$NODE_EXPORTER_YML" _NODE_EXPORTER_TARGETS="$NODE_EXPORTER_TARGETS"
                 RESULT=$("$PYTHON" - << 'PYEOF'
 import json, os, re
 
-path         = os.environ.get('_NODE_EXPORTER_YML', '')
 targets_path = os.environ.get('_NODE_EXPORTER_TARGETS', '')
 
-try:
-    with open(path) as f:
-        text = f.read()
-except Exception:
-    text = ''
-
-def find_scalar(text, key, indent):
-    pattern = r'(?m)^' + (' ' * indent) + re.escape(key) + r':[ \t]*(\S+)'
-    m = re.search(pattern, text)
-    return m.group(1) if m else ''
-
-metrics_path         = find_scalar(text, 'metrics_path', 4)
-scheme               = find_scalar(text, 'scheme', 4)
-insecure_skip_verify = find_scalar(text, 'insecure_skip_verify', 6)
-
-# Parse targets from node-exporter.d/prometheus.yml
+# Parse targets from node-exporter.d/node-exporter-http.yml
 targets = []
 try:
     with open(targets_path) as f:
@@ -272,12 +274,53 @@ except Exception:
     pass
 
 print(json.dumps({
-    'success':              True,
-    'metrics_path':         metrics_path         or '/metrics',
-    'scheme':               scheme               or 'http',
-    'insecure_skip_verify': insecure_skip_verify or 'false',
-    'targets':              targets
+    'success': True,
+    'targets': targets
 }))
+PYEOF
+)
+                printf 'Content-Type: application/json\r\n\r\n'
+                printf '%s' "$RESULT"
+                ;;
+
+            prometheus-job)
+                PROM_JOB_TARGETS="${CFG_DIR}/jobs.d/prometheus.d/prometheus-https.yml"
+                export _PROM_JOB_TARGETS="$PROM_JOB_TARGETS"
+                RESULT=$("$PYTHON" - << 'PYEOF'
+import json, os, re
+targets_path = os.environ.get('_PROM_JOB_TARGETS', '')
+targets = []
+try:
+    with open(targets_path) as f:
+        for line in f:
+            m = re.match(r'^\s+-\s+"([^"]+)"', line)
+            if m:
+                targets.append(m.group(1))
+except Exception:
+    pass
+print(json.dumps({'success': True, 'targets': targets}))
+PYEOF
+)
+                printf 'Content-Type: application/json\r\n\r\n'
+                printf '%s' "$RESULT"
+                ;;
+
+            grafana-job)
+                GRAFANA_JOB_TARGETS="${CFG_DIR}/jobs.d/grafana.d/grafana-https.yml"
+                export _GRAFANA_JOB_TARGETS="$GRAFANA_JOB_TARGETS"
+                RESULT=$("$PYTHON" - << 'PYEOF'
+import json, os, re
+targets_path = os.environ.get('_GRAFANA_JOB_TARGETS', '')
+targets = []
+try:
+    with open(targets_path) as f:
+        for line in f:
+            m = re.match(r'^\s+-\s+"([^"]+)"', line)
+            if m:
+                targets.append(m.group(1))
+except Exception:
+    pass
+print(json.dumps({'success': True, 'targets': targets}))
 PYEOF
 )
                 printf 'Content-Type: application/json\r\n\r\n'
@@ -419,6 +462,22 @@ PYEOF
                 respond '{"success":true}'
                 ;;
 
+            web-configuration)
+                WEB_YML="${CFG_DIR}/web.yml"
+                WEB_YML_CONTENT=$(get_param web_yml)
+                export _WEB_YML="$WEB_YML"
+                export _WEB_YML_CONTENT="$WEB_YML_CONTENT"
+                "$PYTHON" - << 'PYEOF'
+import os
+path = os.environ.get('_WEB_YML', '')
+content = os.environ.get('_WEB_YML_CONTENT', '')
+with open(path, 'w') as f:
+    f.write(content)
+PYEOF
+                chmod 640 "$WEB_YML" 2>/dev/null
+                respond '{"success":true}'
+                ;;
+
             apache)
                 APACHE_HOSTNAME=$(get_param apache_hostname)
                 APACHE_FQDN=$(get_param apache_fqdn)
@@ -497,61 +556,17 @@ PYEOF
             node-exporter)
                 NODE_EXPORTER_YML="${CFG_DIR}/jobs.d/node-exporter.yml"
                 NODE_EXPORTER_D="${CFG_DIR}/jobs.d/node-exporter.d"
-                NODE_EXPORTER_TARGETS="${NODE_EXPORTER_D}/prometheus.yml"
-                METRICS_PATH_V=$(get_param metrics_path)
-                SCHEME_V=$(get_param scheme)
-                INSECURE_SKIP_VERIFY_V=$(get_param insecure_skip_verify)
+                NODE_EXPORTER_TARGETS="${NODE_EXPORTER_D}/node-exporter-http.yml"
                 TARGETS_V=$(get_param targets)
 
-                [ -z "$METRICS_PATH_V" ]         && METRICS_PATH_V='/metrics'
-                [ -z "$SCHEME_V" ]               && SCHEME_V='http'
-                [ -z "$INSECURE_SKIP_VERIFY_V" ] && INSECURE_SKIP_VERIFY_V='false'
+                [ -z "$TARGETS_V" ] && TARGETS_V=''
 
                 mkdir -p "$NODE_EXPORTER_D" 2>/dev/null
 
-                export _NODE_EXPORTER_YML="$NODE_EXPORTER_YML" \
-                       _NODE_EXPORTER_TARGETS="$NODE_EXPORTER_TARGETS" \
-                       _METRICS_PATH="$METRICS_PATH_V" \
-                       _SCHEME="$SCHEME_V" \
-                       _INSECURE_SKIP_VERIFY="$INSECURE_SKIP_VERIFY_V" \
+                export _NODE_EXPORTER_TARGETS="$NODE_EXPORTER_TARGETS" \
                        _TARGETS="$TARGETS_V"
                 "$PYTHON" - << 'PYEOF'
 import os, re
-
-path                 = os.environ.get('_NODE_EXPORTER_YML', '')
-metrics_path         = os.environ.get('_METRICS_PATH', '/metrics')
-scheme               = os.environ.get('_SCHEME', 'http')
-insecure_skip_verify = os.environ.get('_INSECURE_SKIP_VERIFY', 'false')
-
-try:
-    with open(path) as f:
-        lines = f.readlines()
-except Exception:
-    lines = []
-
-def rewrite_scalar(lines, key, indent, value):
-    prefix = ' ' * indent + key + ':'
-    pattern = re.compile(r'^' + re.escape(prefix) + r'[ \t]*(\S+)(.*)$')
-    out = []
-    found = False
-    for line in lines:
-        m = pattern.match(line)
-        if m:
-            trailing = m.group(2).rstrip('\n')
-            if not trailing.strip().startswith('#'):
-                trailing = ''
-            out.append('%s %s%s\n' % (prefix, value, trailing))
-            found = True
-        else:
-            out.append(line)
-    return out, found
-
-lines, _ = rewrite_scalar(lines, 'metrics_path', 4, metrics_path)
-lines, _ = rewrite_scalar(lines, 'scheme', 4, scheme)
-lines, _ = rewrite_scalar(lines, 'insecure_skip_verify', 6, insecure_skip_verify)
-
-with open(path, 'w') as f:
-    f.writelines(lines)
 
 targets_path = os.environ.get('_NODE_EXPORTER_TARGETS', '')
 raw_targets  = os.environ.get('_TARGETS', '')
@@ -564,8 +579,52 @@ for t in targets:
 with open(targets_path, 'w') as f:
     f.writelines(out)
 PYEOF
-                chmod 640 "$NODE_EXPORTER_YML" "$NODE_EXPORTER_TARGETS" 2>/dev/null
+                chmod 640 "$NODE_EXPORTER_TARGETS" 2>/dev/null
 
+                respond '{"success":true}'
+                ;;
+
+            prometheus-job)
+                PROM_JOB_D="${CFG_DIR}/jobs.d/prometheus.d"
+                PROM_JOB_TARGETS="${PROM_JOB_D}/prometheus-https.yml"
+                TARGETS_V=$(get_param targets)
+                mkdir -p "$PROM_JOB_D" 2>/dev/null
+                export _PROM_JOB_TARGETS="$PROM_JOB_TARGETS"
+                export _TARGETS="$TARGETS_V"
+                "$PYTHON" - << 'PYEOF'
+import os
+targets_path = os.environ.get('_PROM_JOB_TARGETS', '')
+raw = os.environ.get('_TARGETS', '')
+targets = [t.strip() for t in raw.split(',') if t.strip()]
+out = ['---\n', '- targets:\n']
+for t in targets:
+    out.append('    - "%s"\n' % t)
+with open(targets_path, 'w') as f:
+    f.writelines(out)
+PYEOF
+                chmod 640 "$PROM_JOB_TARGETS" 2>/dev/null
+                respond '{"success":true}'
+                ;;
+
+            grafana-job)
+                GRAFANA_JOB_D="${CFG_DIR}/jobs.d/grafana.d"
+                GRAFANA_JOB_TARGETS="${GRAFANA_JOB_D}/grafana-https.yml"
+                TARGETS_V=$(get_param targets)
+                mkdir -p "$GRAFANA_JOB_D" 2>/dev/null
+                export _GRAFANA_JOB_TARGETS="$GRAFANA_JOB_TARGETS"
+                export _TARGETS="$TARGETS_V"
+                "$PYTHON" - << 'PYEOF'
+import os
+targets_path = os.environ.get('_GRAFANA_JOB_TARGETS', '')
+raw = os.environ.get('_TARGETS', '')
+targets = [t.strip() for t in raw.split(',') if t.strip()]
+out = ['---\n', '- targets:\n']
+for t in targets:
+    out.append('    - "%s"\n' % t)
+with open(targets_path, 'w') as f:
+    f.writelines(out)
+PYEOF
+                chmod 640 "$GRAFANA_JOB_TARGETS" 2>/dev/null
                 respond '{"success":true}'
                 ;;
 

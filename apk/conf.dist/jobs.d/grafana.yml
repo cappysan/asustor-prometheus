@@ -1,7 +1,7 @@
 ---
 scrape_configs:
   # This job monitors grafana
-  - job_name: "grafana"
+  - job_name: "grafana-https"
     metrics_path: /metrics
     scheme: https
     tls_config:
@@ -17,4 +17,6 @@ scrape_configs:
       - target_label: app
         replacement: grafana
       - target_label: service
+        replacement: grafana
+      - target_label: job
         replacement: grafana

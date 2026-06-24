@@ -7,10 +7,11 @@ cd ${APKG_PKG_DIR:-/nonexistent} || exit 1
 if test -f ${APKG_PKG_DIR}/env; then
   . ${APKG_PKG_DIR}/env
 fi
-
+# ------------------------------------------------------------------------------
 export PID_FILE=/var/run/prometheus.pid
-if test -f ${HOME}/env; then
-  source ${HOME}/env
+
+if test -f ${APKG_CFG_DIR}/env; then
+  . ${APKG_CFG_DIR}/env
 fi
 
 # Force defaults if values are missing

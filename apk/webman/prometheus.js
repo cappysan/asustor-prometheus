@@ -45,10 +45,13 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             store: Ext.create('Ext.data.ArrayStore', {
                 fields: ['title', 'tabId'],
                 data: [
-                    [_S('PROMETHEUS', 'TAB_SETTINGS'),      'settings'],
-                    [_S('PROMETHEUS', 'TAB_PROMETHEUS'),    'prometheus'],
-                    [_S('PROMETHEUS', 'TAB_APACHE'),        'apache'],
-                    [_S('PROMETHEUS', 'TAB_NODE_EXPORTER'), 'node-exporter']
+                    [_S('PROMETHEUS', 'TAB_SETTINGS'),           'settings'],
+                    [_S('PROMETHEUS', 'TAB_PROMETHEUS'),         'prometheus'],
+                    [_S('PROMETHEUS', 'TAB_WEB_CONFIGURATION'),  'web-configuration'],
+                    [_S('PROMETHEUS', 'TAB_APACHE'),             'apache'],
+                    [_S('PROMETHEUS', 'TAB_NODE_EXPORTER'), 'node-exporter'],
+                    [_S('PROMETHEUS', 'TAB_PROMETHEUS_JOB'), 'prometheus-job'],
+                    [_S('PROMETHEUS', 'TAB_GRAFANA_JOB'), 'grafana-job']
                 ]
             }),
             hideHeaders: true,
@@ -59,9 +62,12 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                 renderer: function (v, metadata, record) {
                     var icons = {
                         settings:        AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-settings.png'),
-                        prometheus:      AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-prometheus.png'),
-                        apache:          AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-apache.png'),
-                        'node-exporter': AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-node-exporter.png')
+                        prometheus:           AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-prometheus.png'),
+                        'web-configuration':  AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-configuration.png'),
+                        apache:               AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-apache.png'),
+                        'node-exporter': AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-node-exporter.png'),
+                        'prometheus-job': AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-node-exporter.png'),
+                        'grafana-job':    AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-fn-node-exporter.png')
                     };
                     var iconUrl = icons[record.data.tabId] || icons.settings;
                     return '<div class="fn-block">' +
@@ -95,10 +101,13 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             success: function (json) {
                 fn.win.el.unmask();
                 cardPanel.removeAll();
-                if (tabId === 'settings')      { fn.renderSettingsTab(cardPanel, json); }
-                if (tabId === 'prometheus')    { fn.renderPrometheusTab(cardPanel, json); }
-                if (tabId === 'apache')        { fn.renderApacheTab(cardPanel, json); }
+                if (tabId === 'settings')           { fn.renderSettingsTab(cardPanel, json); }
+                if (tabId === 'prometheus')         { fn.renderPrometheusTab(cardPanel, json); }
+                if (tabId === 'web-configuration')  { fn.renderWebConfigurationTab(cardPanel, json); }
+                if (tabId === 'apache')             { fn.renderApacheTab(cardPanel, json); }
                 if (tabId === 'node-exporter') { fn.renderNodeExporterTab(cardPanel, json); }
+                if (tabId === 'prometheus-job') { fn.renderPrometheusJobTab(cardPanel, json); }
+                if (tabId === 'grafana-job')   { fn.renderGrafanaJobTab(cardPanel, json); }
             },
             failure: function (json) {
                 fn.win.el.unmask();
@@ -429,6 +438,64 @@ Ext.define('AS.ARC.apps.prometheus.core', {
         });
     },
 
+    /* ── Web Configuration tab ───────────────────────────────────────────── */
+    renderWebConfigurationTab: function (cardPanel, json) {
+        var fn = this;
+
+        cardPanel.add(Ext.create('Ext.panel.Panel', {
+            cls:        'as-page-panel app-cappysan-prometheus',
+            border:     false,
+            layout:     'fit',
+            items: [{
+                xtype:  'textarea',
+                itemId: 'webYmlEditor',
+                cls:    'prometheus-web-yml-editor',
+                value:  json.web_yml || '',
+                grow:   false,
+                border: false
+            }],
+            dockedItems: [{
+                xtype: 'toolbar',
+                dock:  'bottom',
+                ui:    'footer',
+                items: [
+                    { xtype: 'component', flex: 1 },
+                    {
+                        xtype:   'button',
+                        text:    _S('PROMETHEUS', 'BTN_RESTART'),
+                        cls:     'prometheus-btn-white',
+                        handler: function () { fn.restartDaemon(); }
+                    },
+                    {
+                        xtype:   'button',
+                        text:    _S('COMMON', 'APPLY'),
+                        handler: function () { fn.saveWebConfigurationTab(); }
+                    }
+                ]
+            }]
+        }));
+    },
+
+    saveWebConfigurationTab: function () {
+        var fn     = this,
+            editor = fn.win.down('#webYmlEditor');
+
+        fn.win.el.mask(_S('COMMON', 'APPLYING'));
+        AS.ARC.ajax({
+            url:    AS.ARC.util.getApiUrlWithSid(fn.apiUrl, { act: 'set', tab: 'web-configuration' }),
+            method: 'post',
+            params: { web_yml: editor ? editor.getValue() : '' },
+            success: function () {
+                fn.win.el.unmask();
+                fn.switchTab('web-configuration');
+            },
+            failure: function (json) {
+                fn.win.el.unmask();
+                AS.ARC.util.showMsgWindow({ 5000: _S('COMMON', 'SESSION_TIMEOUT') }, json, fn.win);
+            }
+        });
+    },
+
     /* ── Apache tab ──────────────────────────────────────────────────────── */
     renderApacheTab: function (cardPanel, json) {
         var fn = this;
@@ -597,33 +664,13 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                 title:    _S('PROMETHEUS', 'SECTION_NODE_EXPORTER_SETTINGS'),
                 defaults: { anchor: '100%', msgTarget: AS.ARC.config.msgTarget },
                 items: [{
+                    xtype: 'displayfield',
+                    value: _S('PROMETHEUS', 'NOTICE_NODE_EXPORTER_JOB')
+                }, {
                     xtype:      'displayfield',
                     fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_JOB_NAME')),
                     labelWidth: labelWidth,
                     value:      'node-exporter'
-                }, {
-                    xtype:      'textfield',
-                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_METRICS_PATH')),
-                    labelWidth: labelWidth,
-                    itemId:     'neMetricsPath',
-                    emptyText:  '/metrics',
-                    value:      json.metrics_path || ''
-                }, {
-                    xtype:      'combobox',
-                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_SCHEME')),
-                    labelWidth: labelWidth,
-                    itemId:     'neScheme',
-                    store:      ['http', 'https'],
-                    editable:   false,
-                    value:      json.scheme || 'http'
-                }, {
-                    xtype:      'combobox',
-                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_INSECURE_SKIP_VERIFY')),
-                    labelWidth: labelWidth,
-                    itemId:     'neInsecureSkipVerify',
-                    store:      ['false', 'true'],
-                    editable:   false,
-                    value:      json.insecure_skip_verify || 'false'
                 }]
             }, {
                 xtype:    'fieldset',
@@ -702,11 +749,8 @@ Ext.define('AS.ARC.apps.prometheus.core', {
     },
 
     saveNodeExporterTab: function () {
-        var fn                 = this,
-            metricsPath        = fn.win.down('#neMetricsPath'),
-            scheme             = fn.win.down('#neScheme'),
-            insecureSkipVerify = fn.win.down('#neInsecureSkipVerify'),
-            grid               = fn.win.down('#neTargetsGrid');
+        var fn   = this,
+            grid = fn.win.down('#neTargetsGrid');
 
         var targets = [];
         if (grid) {
@@ -721,14 +765,365 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             url:    AS.ARC.util.getApiUrlWithSid(fn.apiUrl, { act: 'set', tab: 'node-exporter' }),
             method: 'post',
             params: {
-                metrics_path:         metricsPath        ? (metricsPath.getValue()        || '/metrics') : '/metrics',
-                scheme:               scheme             ? (scheme.getValue()             || 'http')     : 'http',
-                insecure_skip_verify: insecureSkipVerify ? (insecureSkipVerify.getValue() || 'false')    : 'false',
-                targets:              targets.join(',')
+                targets: targets.join(',')
             },
             success: function () {
                 fn.win.el.unmask();
                 fn.switchTab('node-exporter');
+            },
+            failure: function (json) {
+                fn.win.el.unmask();
+                AS.ARC.util.showMsgWindow({ 5000: _S('COMMON', 'SESSION_TIMEOUT') }, json, fn.win);
+            }
+        });
+    },
+
+    /* ── Prometheus job tab ──────────────────────────────────────────────── */
+    renderPrometheusJobTab: function (cardPanel, json) {
+        var fn         = this,
+            labelWidth = 200;
+
+        var store = Ext.create('Ext.data.Store', {
+            pageSize: 5,
+            fields:   ['target'],
+            data:     Ext.Array.map(json.targets || [], function (t) { return { target: t }; })
+        });
+
+        var grid = Ext.create('Ext.grid.Panel', {
+            itemId:          'promJobTargetsGrid',
+            store:           store,
+            border:          false,
+            sortableColumns: false,
+            style: { border: '#BBB 1px solid' },
+            columns: [{
+                header:       _S('PROMETHEUS', 'COL_NE_TARGET'),
+                dataIndex:    'target',
+                menuDisabled: true,
+                flex:         1
+            }],
+            dockedItems: [{
+                xtype: 'toolbar',
+                dock:  'top',
+                items: [{
+                    text:    _S('PROMETHEUS', 'BTN_ADD'),
+                    handler: function () { fn.showPrometheusJobTargetPopup('add', null, store); }
+                }, {
+                    text:     _S('PROMETHEUS', 'BTN_MODIFY'),
+                    itemId:   'promJobModifyBtn',
+                    disabled: true,
+                    handler: function () {
+                        var sel = grid.getSelectionModel().getSelection();
+                        if (sel.length) { fn.showPrometheusJobTargetPopup('modify', sel[0], store); }
+                    }
+                }, {
+                    text:     _S('PROMETHEUS', 'BTN_DELETE'),
+                    itemId:   'promJobDeleteBtn',
+                    disabled: true,
+                    handler: function () {
+                        var sel = grid.getSelectionModel().getSelection();
+                        if (sel.length) { store.remove(sel); }
+                    }
+                }]
+            }],
+            bbar: Ext.create('AS.ARC.pagingToolbar', { store: store }),
+            listeners: {
+                selectionchange: function (model, sel) {
+                    var has = sel.length > 0;
+                    grid.down('#promJobModifyBtn').setDisabled(!has);
+                    grid.down('#promJobDeleteBtn').setDisabled(!has);
+                }
+            }
+        });
+
+        cardPanel.add(Ext.create('Ext.panel.Panel', {
+            cls:        'as-page-panel app-cappysan-prometheus',
+            border:     false,
+            layout:     'anchor',
+            autoScroll: true,
+            defaults:   { anchor: '100%' },
+            items: [{
+                xtype:    'fieldset',
+                title:    _S('PROMETHEUS', 'SECTION_NODE_EXPORTER_SETTINGS'),
+                defaults: { anchor: '100%', msgTarget: AS.ARC.config.msgTarget },
+                items: [{
+                    xtype: 'displayfield',
+                    value: _S('PROMETHEUS', 'NOTICE_PROMETHEUS_JOB')
+                }, {
+                    xtype:      'displayfield',
+                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_JOB_NAME')),
+                    labelWidth: labelWidth,
+                    value:      'prometheus'
+                }]
+            }, {
+                xtype:    'fieldset',
+                title:    _S('PROMETHEUS', 'SECTION_NODE_EXPORTER_TARGETS'),
+                defaults: { anchor: '100%' },
+                items:    [grid]
+            }],
+            dockedItems: [{
+                xtype: 'toolbar',
+                dock:  'bottom',
+                ui:    'footer',
+                items: [
+                    { xtype: 'component', flex: 1 },
+                    {
+                        xtype:   'button',
+                        text:    _S('PROMETHEUS', 'BTN_RELOAD'),
+                        cls:     'prometheus-btn-white',
+                        handler: function () { fn.reloadDaemon(); }
+                    },
+                    {
+                        xtype:   'button',
+                        text:    _S('COMMON', 'APPLY'),
+                        handler: function () { fn.savePrometheusJobTab(); }
+                    }
+                ]
+            }]
+        }));
+    },
+
+    showPrometheusJobTargetPopup: function (mode, record, store) {
+        var fn       = this,
+            isModify = (mode === 'modify');
+
+        fn.promJobTargetPopup = Ext.create('AS.ARC.msgWindow', {
+            parentWin: fn.win,
+            title:     isModify ? _S('PROMETHEUS', 'TITLE_MODIFY_TARGET') : _S('PROMETHEUS', 'TITLE_ADD_TARGET'),
+            width:     550,
+            height:    200,
+            iconType:  'info',
+            asItems: [{
+                xtype:      'textfield',
+                fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_TARGET_HOST')),
+                itemId:     'promJobPopupTarget',
+                labelWidth: 60,
+                style:      'width: auto;',
+                emptyText:  _S('PROMETHEUS', 'HINT_PROM_TARGET_HOST'),
+                value:      isModify ? record.get('target') : ''
+            }],
+            fbar: [{
+                text:    _S('COMMON', 'OK'),
+                handler: function () {
+                    var fld = fn.promJobTargetPopup.down('#promJobPopupTarget');
+                    if (!fld) { return; }
+                    var val = Ext.String.trim(fld.getValue());
+                    if (!val || /^https?:\/\//i.test(val) || /:\d+$/.test(val)) {
+                        fld.markInvalid(_S('PROMETHEUS', 'ERR_PROM_TARGET_FORMAT'));
+                        return;
+                    }
+                    if (isModify) {
+                        record.set('target', val);
+                    } else {
+                        store.add({ target: val });
+                    }
+                    fn.promJobTargetPopup.close();
+                }
+            }, {
+                text:    _S('COMMON', 'CANCEL'),
+                handler: function () { fn.promJobTargetPopup.close(); }
+            }]
+        });
+
+        fn.promJobTargetPopup.show();
+    },
+
+    savePrometheusJobTab: function () {
+        var fn   = this,
+            grid = fn.win.down('#promJobTargetsGrid');
+
+        var targets = [];
+        if (grid) {
+            grid.getStore().each(function (rec) {
+                var t = Ext.String.trim(rec.get('target'));
+                if (t) { targets.push(t); }
+            });
+        }
+
+        fn.win.el.mask(_S('COMMON', 'APPLYING'));
+        AS.ARC.ajax({
+            url:    AS.ARC.util.getApiUrlWithSid(fn.apiUrl, { act: 'set', tab: 'prometheus-job' }),
+            method: 'post',
+            params: { targets: targets.join(',') },
+            success: function () {
+                fn.win.el.unmask();
+                fn.switchTab('prometheus-job');
+            },
+            failure: function (json) {
+                fn.win.el.unmask();
+                AS.ARC.util.showMsgWindow({ 5000: _S('COMMON', 'SESSION_TIMEOUT') }, json, fn.win);
+            }
+        });
+    },
+
+    /* ── Grafana job tab ─────────────────────────────────────────────────── */
+    renderGrafanaJobTab: function (cardPanel, json) {
+        var fn         = this,
+            labelWidth = 200;
+
+        var store = Ext.create('Ext.data.Store', {
+            pageSize: 5,
+            fields:   ['target'],
+            data:     Ext.Array.map(json.targets || [], function (t) { return { target: t }; })
+        });
+
+        var grid = Ext.create('Ext.grid.Panel', {
+            itemId:          'grafanaJobTargetsGrid',
+            store:           store,
+            border:          false,
+            sortableColumns: false,
+            style: { border: '#BBB 1px solid' },
+            columns: [{
+                header:       _S('PROMETHEUS', 'COL_NE_TARGET'),
+                dataIndex:    'target',
+                menuDisabled: true,
+                flex:         1
+            }],
+            dockedItems: [{
+                xtype: 'toolbar',
+                dock:  'top',
+                items: [{
+                    text:    _S('PROMETHEUS', 'BTN_ADD'),
+                    handler: function () { fn.showGrafanaJobTargetPopup('add', null, store); }
+                }, {
+                    text:     _S('PROMETHEUS', 'BTN_MODIFY'),
+                    itemId:   'grafanaJobModifyBtn',
+                    disabled: true,
+                    handler: function () {
+                        var sel = grid.getSelectionModel().getSelection();
+                        if (sel.length) { fn.showGrafanaJobTargetPopup('modify', sel[0], store); }
+                    }
+                }, {
+                    text:     _S('PROMETHEUS', 'BTN_DELETE'),
+                    itemId:   'grafanaJobDeleteBtn',
+                    disabled: true,
+                    handler: function () {
+                        var sel = grid.getSelectionModel().getSelection();
+                        if (sel.length) { store.remove(sel); }
+                    }
+                }]
+            }],
+            bbar: Ext.create('AS.ARC.pagingToolbar', { store: store }),
+            listeners: {
+                selectionchange: function (model, sel) {
+                    var has = sel.length > 0;
+                    grid.down('#grafanaJobModifyBtn').setDisabled(!has);
+                    grid.down('#grafanaJobDeleteBtn').setDisabled(!has);
+                }
+            }
+        });
+
+        cardPanel.add(Ext.create('Ext.panel.Panel', {
+            cls:        'as-page-panel app-cappysan-prometheus',
+            border:     false,
+            layout:     'anchor',
+            autoScroll: true,
+            defaults:   { anchor: '100%' },
+            items: [{
+                xtype:    'fieldset',
+                title:    _S('PROMETHEUS', 'SECTION_NODE_EXPORTER_SETTINGS'),
+                defaults: { anchor: '100%', msgTarget: AS.ARC.config.msgTarget },
+                items: [{
+                    xtype: 'displayfield',
+                    value: _S('PROMETHEUS', 'NOTICE_GRAFANA_JOB')
+                }, {
+                    xtype:      'displayfield',
+                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_JOB_NAME')),
+                    labelWidth: labelWidth,
+                    value:      'grafana'
+                }]
+            }, {
+                xtype:    'fieldset',
+                title:    _S('PROMETHEUS', 'SECTION_NODE_EXPORTER_TARGETS'),
+                defaults: { anchor: '100%' },
+                items:    [grid]
+            }],
+            dockedItems: [{
+                xtype: 'toolbar',
+                dock:  'bottom',
+                ui:    'footer',
+                items: [
+                    { xtype: 'component', flex: 1 },
+                    {
+                        xtype:   'button',
+                        text:    _S('PROMETHEUS', 'BTN_RELOAD'),
+                        cls:     'prometheus-btn-white',
+                        handler: function () { fn.reloadDaemon(); }
+                    },
+                    {
+                        xtype:   'button',
+                        text:    _S('COMMON', 'APPLY'),
+                        handler: function () { fn.saveGrafanaJobTab(); }
+                    }
+                ]
+            }]
+        }));
+    },
+
+    showGrafanaJobTargetPopup: function (mode, record, store) {
+        var fn       = this,
+            isModify = (mode === 'modify');
+
+        fn.grafanaJobTargetPopup = Ext.create('AS.ARC.msgWindow', {
+            parentWin: fn.win,
+            title:     isModify ? _S('PROMETHEUS', 'TITLE_MODIFY_TARGET') : _S('PROMETHEUS', 'TITLE_ADD_TARGET'),
+            width:     550,
+            height:    200,
+            iconType:  'info',
+            asItems: [{
+                xtype:      'textfield',
+                fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_TARGET_HOST')),
+                itemId:     'grafanaJobPopupTarget',
+                labelWidth: 60,
+                style:      'width: auto;',
+                emptyText:  _S('PROMETHEUS', 'HINT_PROM_TARGET_HOST'),
+                value:      isModify ? record.get('target') : ''
+            }],
+            fbar: [{
+                text:    _S('COMMON', 'OK'),
+                handler: function () {
+                    var fld = fn.grafanaJobTargetPopup.down('#grafanaJobPopupTarget');
+                    if (!fld) { return; }
+                    var val = Ext.String.trim(fld.getValue());
+                    if (!val || /^https?:\/\//i.test(val) || /:\d+$/.test(val)) {
+                        fld.markInvalid(_S('PROMETHEUS', 'ERR_PROM_TARGET_FORMAT'));
+                        return;
+                    }
+                    if (isModify) {
+                        record.set('target', val);
+                    } else {
+                        store.add({ target: val });
+                    }
+                    fn.grafanaJobTargetPopup.close();
+                }
+            }, {
+                text:    _S('COMMON', 'CANCEL'),
+                handler: function () { fn.grafanaJobTargetPopup.close(); }
+            }]
+        });
+
+        fn.grafanaJobTargetPopup.show();
+    },
+
+    saveGrafanaJobTab: function () {
+        var fn   = this,
+            grid = fn.win.down('#grafanaJobTargetsGrid');
+
+        var targets = [];
+        if (grid) {
+            grid.getStore().each(function (rec) {
+                var t = Ext.String.trim(rec.get('target'));
+                if (t) { targets.push(t); }
+            });
+        }
+
+        fn.win.el.mask(_S('COMMON', 'APPLYING'));
+        AS.ARC.ajax({
+            url:    AS.ARC.util.getApiUrlWithSid(fn.apiUrl, { act: 'set', tab: 'grafana-job' }),
+            method: 'post',
+            params: { targets: targets.join(',') },
+            success: function () {
+                fn.win.el.unmask();
+                fn.switchTab('grafana-job');
             },
             failure: function (json) {
                 fn.win.el.unmask();

@@ -1,7 +1,7 @@
 ---
 scrape_configs:
   # This job monitors the system via the node exporter
-  - job_name: "node-exporter"
+  - job_name: "node-exporter-http"
     metrics_path: /metrics
     scheme: http
     tls_config:
@@ -15,4 +15,6 @@ scrape_configs:
         regex: "([^:]+)(:[0-9]+)?"
         replacement: "${1}"
       - target_label: app
+        replacement: node-exporter
+      - target_label: job
         replacement: node-exporter

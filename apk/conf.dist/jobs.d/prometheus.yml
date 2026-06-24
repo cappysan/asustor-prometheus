@@ -1,7 +1,7 @@
 ---
 scrape_configs:
-  # This job monitors prometheus
-  - job_name: "prometheus"
+  # This job monitors prometheus itself
+  - job_name: "prometheus-https"
     metrics_path: /metrics
     scheme: https
     tls_config:
@@ -17,4 +17,6 @@ scrape_configs:
       - target_label: app
         replacement: prometheus
       - target_label: service
+        replacement: prometheus
+      - target_label: job
         replacement: prometheus

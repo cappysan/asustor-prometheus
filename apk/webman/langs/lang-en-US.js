@@ -6,6 +6,7 @@ _AS_STRINGS.PROMETHEUS = {};
 _AS_STRINGS.PROMETHEUS.APP_TITLE        = 'Prometheus';
 _AS_STRINGS.PROMETHEUS.TAB_SETTINGS     = 'Settings';
 _AS_STRINGS.PROMETHEUS.TAB_PROMETHEUS   = 'Prometheus';
+_AS_STRINGS.PROMETHEUS.TAB_WEB_CONFIGURATION = 'Web configuration';
 _AS_STRINGS.PROMETHEUS.TAB_APACHE       = 'Apache';
 _AS_STRINGS.PROMETHEUS.SECTION_LINK     = 'Link';
 _AS_STRINGS.PROMETHEUS.SECTION_INFORMATION  = 'Information';
@@ -37,6 +38,8 @@ _AS_STRINGS.PROMETHEUS.LABEL_APACHE_PROXY_TO = 'HTTPS proxy';
 
 /* Node Exporter tab */
 _AS_STRINGS.PROMETHEUS.TAB_NODE_EXPORTER              = 'node-exporter';
+_AS_STRINGS.PROMETHEUS.TAB_PROMETHEUS_JOB             = 'prometheus';
+_AS_STRINGS.PROMETHEUS.TAB_GRAFANA_JOB                = 'grafana';
 _AS_STRINGS.PROMETHEUS.SECTION_NODE_EXPORTER_SETTINGS = 'Settings';
 _AS_STRINGS.PROMETHEUS.SECTION_NODE_EXPORTER_TARGETS  = 'Targets';
 _AS_STRINGS.PROMETHEUS.LABEL_NE_JOB_NAME              = 'job_name';
@@ -52,3 +55,8 @@ _AS_STRINGS.PROMETHEUS.TITLE_MODIFY_TARGET            = 'Modify Target';
 _AS_STRINGS.PROMETHEUS.LABEL_NE_TARGET_HOST           = 'Target';
 _AS_STRINGS.PROMETHEUS.HINT_NE_TARGET_HOST            = 'hostname:port (e.g. nas.example.com:9100)';
 _AS_STRINGS.PROMETHEUS.ERR_TARGET_FORMAT              = 'Enter a valid target: hostname:port (no http:// prefix)';
+_AS_STRINGS.PROMETHEUS.HINT_PROM_TARGET_HOST          = 'hostname (e.g. prometheus.example.com)';
+_AS_STRINGS.PROMETHEUS.ERR_PROM_TARGET_FORMAT         = 'Enter a valid hostname (no http:// prefix, no port)';
+_AS_STRINGS.PROMETHEUS.NOTICE_NODE_EXPORTER_JOB       = 'This job monitors node resources';
+_AS_STRINGS.PROMETHEUS.NOTICE_PROMETHEUS_JOB          = 'This job monitors Prometheus itself';
+_AS_STRINGS.PROMETHEUS.NOTICE_GRAFANA_JOB             = 'This job monitors Grafana itself';

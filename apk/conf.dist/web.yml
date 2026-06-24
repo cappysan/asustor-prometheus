@@ -116,4 +116,4 @@ http_server_config:
 # Rate limiting requests on the endpoint using a token bucket
 rate_limit:
   interval: "1s"  # time interval between two requests, set to 0 to disable rate limiter
-  burst: 10  # and permits a burst of <int> requests.
+  burst: 100  # and permits a burst of <int> requests.
