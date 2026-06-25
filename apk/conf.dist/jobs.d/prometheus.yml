@@ -1,14 +1,12 @@
 ---
 scrape_configs:
   # This job monitors prometheus itself
-  - job_name: "prometheus-https"
+  - job_name: "prometheus-http"
     metrics_path: /metrics
-    scheme: https
-    tls_config:
-      insecure_skip_verify: false
+    scheme: http
     file_sd_configs:
       - files:
-          - "prometheus.d/*.yml"
+          - "prometheus.d/prometheus-http.yml"
     relabel_configs: &instance_relabel
       - source_labels: [__address__]
         target_label: instance
@@ -20,3 +18,13 @@ scrape_configs:
         replacement: prometheus
       - target_label: job
         replacement: prometheus
+
+  - job_name: "prometheus-https"
+    metrics_path: /metrics
+    scheme: https
+    tls_config:
+      insecure_skip_verify: false
+    file_sd_configs:
+      - files:
+          - "prometheus.d/prometheus-https.yml"
+    relabel_configs: *instance_relabel

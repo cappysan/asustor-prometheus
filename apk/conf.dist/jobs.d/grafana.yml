@@ -1,14 +1,12 @@
 ---
 scrape_configs:
   # This job monitors grafana
-  - job_name: "grafana-https"
+  - job_name: "grafana-http"
     metrics_path: /metrics
-    scheme: https
-    tls_config:
-      insecure_skip_verify: false
+    scheme: http
     file_sd_configs:
       - files:
-          - "grafana.d/*.yml"
+          - "grafana.d/grafana-http.yml"
     relabel_configs: &instance_relabel
       - source_labels: [__address__]
         target_label: instance
@@ -20,3 +18,13 @@ scrape_configs:
         replacement: grafana
       - target_label: job
         replacement: grafana
+
+  - job_name: "grafana-https"
+    metrics_path: /metrics
+    scheme: https
+    tls_config:
+      insecure_skip_verify: false
+    file_sd_configs:
+      - files:
+          - "grafana.d/grafana-https.yml"
+    relabel_configs: *instance_relabel

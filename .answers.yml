@@ -27,7 +27,7 @@ answers:
   - has_precommit_nitpick: False
 
   - license: "MIT"
-  - version: "3.12.0-r86"
+  - version: "3.12.0-r89"
   - version_style: "semver-rev"
   - copyright_string: "Cappysan, Julien Lecomte, and contributors"
 
