@@ -26,6 +26,15 @@ _AS_STRINGS.PROMETHEUS.LINK_OVERRIDE_HINT = 'Custom URL override';
 _AS_STRINGS.PROMETHEUS.BTN_RESTART      = 'Restart';
 _AS_STRINGS.PROMETHEUS.BTN_RELOAD       = 'Reload';
 
+/* Web Configuration tab */
+_AS_STRINGS.PROMETHEUS.SECTION_TLS        = 'TLS';
+_AS_STRINGS.PROMETHEUS.LABEL_ENABLE_TLS   = 'Enable TLS';
+_AS_STRINGS.PROMETHEUS.SECTION_RATE_LIMIT = 'Rate Limit';
+_AS_STRINGS.PROMETHEUS.LABEL_RL_INTERVAL  = 'Interval';
+_AS_STRINGS.PROMETHEUS.HELP_RL_INTERVAL   = 'Time interval between two requests, set to 0 to disable rate limiter';
+_AS_STRINGS.PROMETHEUS.LABEL_RL_BURST     = 'Burst';
+_AS_STRINGS.PROMETHEUS.HELP_RL_BURST      = 'Permits a burst of &lt;int&gt; requests';
+
 /* Apache tab */
 _AS_STRINGS.PROMETHEUS.NOTICE_HOSTS_PERSISTENCE = '<strong>Notice:</strong> /etc/hosts entries can be configured with the cappysan-persistence package.';
 _AS_STRINGS.PROMETHEUS.NOTICE_APACHE_SITES = '<strong>Notice:</strong> Apache sites can be configured with the cappysan-apache package.';
@@ -47,6 +56,8 @@ _AS_STRINGS.PROMETHEUS.LABEL_NE_METRICS_PATH          = 'metrics_path';
 _AS_STRINGS.PROMETHEUS.LABEL_NE_SCHEME                = 'scheme';
 _AS_STRINGS.PROMETHEUS.LABEL_NE_INSECURE_SKIP_VERIFY  = 'tls_config.insecure_skip_verify';
 _AS_STRINGS.PROMETHEUS.COL_NE_TARGET                  = 'Target';
+_AS_STRINGS.PROMETHEUS.COL_NE_SCHEME                  = 'Scheme';
+_AS_STRINGS.PROMETHEUS.LABEL_NE_SCHEME                = 'Scheme';
 _AS_STRINGS.PROMETHEUS.BTN_ADD                        = 'Add';
 _AS_STRINGS.PROMETHEUS.BTN_MODIFY                     = 'Modify';
 _AS_STRINGS.PROMETHEUS.BTN_DELETE                     = 'Delete';

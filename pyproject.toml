@@ -8,7 +8,7 @@
 dynamic = ["dependencies"]
 
 name = "cappysan-prometheus"
-version = "3.12.0-r72"
+version = "3.12.0-r85"
 authors = [
   {name = "Julien Lecomte", email = "julien@cappysan.dev"}
 ]
@@ -24,7 +24,7 @@ Homepage = "https://gitlab.com/cappysan/asustor/prometheus"
 # Other tools
 # ------------------------------------------------------------------------------
 [tool.bumpversion]
-current_version = "3.12.0-r72"
+current_version = "3.12.0-r85"
 
 parse = """(?x)
   (?P<major>0|[1-9]\\d*)\\.

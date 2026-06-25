@@ -4,11 +4,9 @@ scrape_configs:
   - job_name: "node-exporter-http"
     metrics_path: /metrics
     scheme: http
-    tls_config:
-      insecure_skip_verify: false
     file_sd_configs:
       - files:
-          - "node-exporter.d/*.yml"
+          - "node-exporter.d/node-exporter-http.yml"
     relabel_configs: &instance_relabel
       - source_labels: [__address__]
         target_label: instance
@@ -18,3 +16,13 @@ scrape_configs:
         replacement: node-exporter
       - target_label: job
         replacement: node-exporter
+
+  - job_name: "node-exporter-https"
+    metrics_path: /metrics
+    scheme: https
+    tls_config:
+      insecure_skip_verify: false
+    file_sd_configs:
+      - files:
+          - "node-exporter.d/node-exporter-https.yml"
+    relabel_configs: *instance_relabel

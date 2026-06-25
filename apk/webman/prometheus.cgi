@@ -206,14 +206,30 @@ PYEOF
                 WEB_YML="${CFG_DIR}/web.yml"
                 export _WEB_YML="$WEB_YML"
                 RESULT=$("$PYTHON" - << 'PYEOF'
-import json, os
+import json, os, re
+
 path = os.environ.get('_WEB_YML', '')
 try:
     with open(path) as f:
         content = f.read()
 except Exception:
     content = ''
-print(json.dumps({'success': True, 'web_yml': content}))
+
+cert_uncommented = bool(re.search(r'(?m)^[ \t]+cert_file:', content))
+key_uncommented  = bool(re.search(r'(?m)^[ \t]+key_file:', content))
+tls_enabled = cert_uncommented and key_uncommented
+
+rl_interval = 1
+m = re.search(r'(?m)^\s*interval:\s*"?(\d+)', content)
+if m:
+    rl_interval = int(m.group(1))
+
+rl_burst = 20
+m = re.search(r'(?m)^\s*burst:\s*(\d+)', content)
+if m:
+    rl_burst = int(m.group(1))
+
+print(json.dumps({'success': True, 'tls_enabled': tls_enabled, 'rl_interval': rl_interval, 'rl_burst': rl_burst}))
 PYEOF
 )
                 printf 'Content-Type: application/json\r\n\r\n'
@@ -255,28 +271,28 @@ PYEOF
             node-exporter)
                 NODE_EXPORTER_YML="${CFG_DIR}/jobs.d/node-exporter.yml"
                 NODE_EXPORTER_D="${CFG_DIR}/jobs.d/node-exporter.d"
-                NODE_EXPORTER_TARGETS="${NODE_EXPORTER_D}/node-exporter-http.yml"
-                export _NODE_EXPORTER_YML="$NODE_EXPORTER_YML" _NODE_EXPORTER_TARGETS="$NODE_EXPORTER_TARGETS"
+                NODE_EXPORTER_HTTP="${NODE_EXPORTER_D}/node-exporter-http.yml"
+                NODE_EXPORTER_HTTPS="${NODE_EXPORTER_D}/node-exporter-https.yml"
+                export _NODE_EXPORTER_YML="$NODE_EXPORTER_YML" _NODE_EXPORTER_HTTP="$NODE_EXPORTER_HTTP" _NODE_EXPORTER_HTTPS="$NODE_EXPORTER_HTTPS"
                 RESULT=$("$PYTHON" - << 'PYEOF'
 import json, os, re
 
-targets_path = os.environ.get('_NODE_EXPORTER_TARGETS', '')
+def parse_targets(path, scheme):
+    targets = []
+    try:
+        with open(path) as f:
+            for line in f:
+                m = re.match(r'^\s+-\s+"([^"]+)"', line)
+                if m:
+                    targets.append({'target': m.group(1), 'scheme': scheme})
+    except Exception:
+        pass
+    return targets
 
-# Parse targets from node-exporter.d/node-exporter-http.yml
-targets = []
-try:
-    with open(targets_path) as f:
-        for line in f:
-            m = re.match(r'^\s+-\s+"([^"]+)"', line)
-            if m:
-                targets.append(m.group(1))
-except Exception:
-    pass
+targets  = parse_targets(os.environ.get('_NODE_EXPORTER_HTTP',  ''), 'http')
+targets += parse_targets(os.environ.get('_NODE_EXPORTER_HTTPS', ''), 'https')
 
-print(json.dumps({
-    'success': True,
-    'targets': targets
-}))
+print(json.dumps({'success': True, 'targets': targets}))
 PYEOF
 )
                 printf 'Content-Type: application/json\r\n\r\n'
@@ -464,13 +480,52 @@ PYEOF
 
             web-configuration)
                 WEB_YML="${CFG_DIR}/web.yml"
-                WEB_YML_CONTENT=$(get_param web_yml)
-                export _WEB_YML="$WEB_YML"
-                export _WEB_YML_CONTENT="$WEB_YML_CONTENT"
+                TLS_ENABLED=$(get_param tls_enabled)
+                RL_INTERVAL=$(get_param rl_interval)
+                RL_BURST=$(get_param rl_burst)
+                export _WEB_YML="$WEB_YML" _TLS_ENABLED="$TLS_ENABLED" _RL_INTERVAL="$RL_INTERVAL" _RL_BURST="$RL_BURST"
                 "$PYTHON" - << 'PYEOF'
-import os
-path = os.environ.get('_WEB_YML', '')
-content = os.environ.get('_WEB_YML_CONTENT', '')
+import os, re
+
+path        = os.environ.get('_WEB_YML', '')
+tls_enabled = os.environ.get('_TLS_ENABLED', '1') == '1'
+try:
+    rl_interval = int(os.environ.get('_RL_INTERVAL', '1'))
+except ValueError:
+    rl_interval = 1
+try:
+    rl_burst = int(os.environ.get('_RL_BURST', '20'))
+except ValueError:
+    rl_burst = 20
+
+try:
+    with open(path) as f:
+        content = f.read()
+except Exception:
+    content = ''
+
+def toggle_tls_line(content, key, enabled):
+    pattern = re.compile(r'(?m)^([ \t]*)#?([ \t]*)(' + re.escape(key) + r':[ \t]*.+)$')
+    def replacer(m):
+        indent = m.group(1) + m.group(2)
+        rest   = m.group(3)
+        return indent + rest if enabled else indent + '# ' + rest
+    return pattern.sub(replacer, content)
+
+content = toggle_tls_line(content, 'cert_file', tls_enabled)
+content = toggle_tls_line(content, 'key_file',  tls_enabled)
+
+content = re.sub(
+    r'(?m)^(\s*interval:\s*)"?\d+s?"?',
+    lambda m: m.group(1) + '"%ds"' % rl_interval if rl_interval > 0 else m.group(1) + '"0"',
+    content
+)
+content = re.sub(
+    r'(?m)^(\s*burst:\s*)\d+',
+    lambda m: m.group(1) + str(rl_burst),
+    content
+)
+
 with open(path, 'w') as f:
     f.write(content)
 PYEOF
@@ -556,30 +611,33 @@ PYEOF
             node-exporter)
                 NODE_EXPORTER_YML="${CFG_DIR}/jobs.d/node-exporter.yml"
                 NODE_EXPORTER_D="${CFG_DIR}/jobs.d/node-exporter.d"
-                NODE_EXPORTER_TARGETS="${NODE_EXPORTER_D}/node-exporter-http.yml"
-                TARGETS_V=$(get_param targets)
-
-                [ -z "$TARGETS_V" ] && TARGETS_V=''
+                NODE_EXPORTER_HTTP="${NODE_EXPORTER_D}/node-exporter-http.yml"
+                NODE_EXPORTER_HTTPS="${NODE_EXPORTER_D}/node-exporter-https.yml"
+                HTTP_TARGETS_V=$(get_param http_targets)
+                HTTPS_TARGETS_V=$(get_param https_targets)
 
                 mkdir -p "$NODE_EXPORTER_D" 2>/dev/null
 
-                export _NODE_EXPORTER_TARGETS="$NODE_EXPORTER_TARGETS" \
-                       _TARGETS="$TARGETS_V"
+                export _NODE_EXPORTER_HTTP="$NODE_EXPORTER_HTTP" \
+                       _NODE_EXPORTER_HTTPS="$NODE_EXPORTER_HTTPS" \
+                       _HTTP_TARGETS="$HTTP_TARGETS_V" \
+                       _HTTPS_TARGETS="$HTTPS_TARGETS_V"
                 "$PYTHON" - << 'PYEOF'
-import os, re
+import os
 
-targets_path = os.environ.get('_NODE_EXPORTER_TARGETS', '')
-raw_targets  = os.environ.get('_TARGETS', '')
-targets      = [t.strip() for t in raw_targets.split(',') if t.strip()]
+def write_targets(path, raw):
+    targets = [t.strip() for t in raw.split(',') if t.strip()]
+    out = ['---\n', '- targets:\n']
+    for t in targets:
+        out.append('    - "%s"\n' % t)
+    with open(path, 'w') as f:
+        f.writelines(out)
 
-out = ['---\n', '- targets:\n']
-for t in targets:
-    out.append('    - "%s"\n' % t)
-
-with open(targets_path, 'w') as f:
-    f.writelines(out)
+write_targets(os.environ.get('_NODE_EXPORTER_HTTP',  ''), os.environ.get('_HTTP_TARGETS',  ''))
+write_targets(os.environ.get('_NODE_EXPORTER_HTTPS', ''), os.environ.get('_HTTPS_TARGETS', ''))
 PYEOF
-                chmod 640 "$NODE_EXPORTER_TARGETS" 2>/dev/null
+                chmod 640 "$NODE_EXPORTER_HTTP"  2>/dev/null
+                chmod 640 "$NODE_EXPORTER_HTTPS" 2>/dev/null
 
                 respond '{"success":true}'
                 ;;

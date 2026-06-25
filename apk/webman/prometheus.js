@@ -20,10 +20,10 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             itemId:    fn.id,
             title:     '<div class="as-header" style="background-image:url(' + AS.ARC.util.fixDc('/apps/cappysan-prometheus/images/icon-app-task.png') + ');background-position:50%;background-repeat:no-repeat;"></div><div class="as-header-text">Prometheus</div>',
 
-            width:     700,
-            height:    500,
-            minWidth:  700,
-            minHeight: 500,
+            width:     720,
+            height:    550,
+            minWidth:  720,
+            minHeight: 550,
             resizable: true,
             border:    false,
             layout:    'fit',
@@ -440,19 +440,57 @@ Ext.define('AS.ARC.apps.prometheus.core', {
 
     /* ── Web Configuration tab ───────────────────────────────────────────── */
     renderWebConfigurationTab: function (cardPanel, json) {
-        var fn = this;
+        var fn         = this,
+            labelWidth = 200;
 
         cardPanel.add(Ext.create('Ext.panel.Panel', {
             cls:        'as-page-panel app-cappysan-prometheus',
             border:     false,
-            layout:     'fit',
+            layout:     'anchor',
+            autoScroll: true,
+            defaults:   { anchor: '100%' },
             items: [{
-                xtype:  'textarea',
-                itemId: 'webYmlEditor',
-                cls:    'prometheus-web-yml-editor',
-                value:  json.web_yml || '',
-                grow:   false,
-                border: false
+                xtype:    'fieldset',
+                title:    _S('PROMETHEUS', 'SECTION_TLS'),
+                defaults: { anchor: '100%', msgTarget: AS.ARC.config.msgTarget },
+                items: [{
+                    xtype:      'checkbox',
+                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_ENABLE_TLS')),
+                    labelWidth: labelWidth,
+                    itemId:     'webTlsEnabled',
+                    checked:    (json.tls_enabled !== false && json.tls_enabled !== 'false')
+                }]
+            }, {
+                xtype:    'fieldset',
+                title:    _S('PROMETHEUS', 'SECTION_RATE_LIMIT'),
+                defaults: { anchor: '100%', msgTarget: AS.ARC.config.msgTarget },
+                items: [{
+                    xtype:      'numberfield',
+                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_RL_INTERVAL')),
+                    labelWidth: labelWidth,
+                    itemId:     'webRlInterval',
+                    value:      (json.rl_interval !== undefined && json.rl_interval !== null) ? json.rl_interval : 1,
+                    minValue:   0,
+                    maxValue:   60,
+                    allowDecimals: false
+                }, {
+                    xtype:  'displayfield',
+                    value:  _S('PROMETHEUS', 'HELP_RL_INTERVAL'),
+                    margin: '0 0 6 ' + (labelWidth + 5)
+                }, {
+                    xtype:      'numberfield',
+                    fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_RL_BURST')),
+                    labelWidth: labelWidth,
+                    itemId:     'webRlBurst',
+                    value:      (json.rl_burst !== undefined && json.rl_burst !== null) ? json.rl_burst : 20,
+                    minValue:   0,
+                    maxValue:   999,
+                    allowDecimals: false
+                }, {
+                    xtype:  'displayfield',
+                    value:  _S('PROMETHEUS', 'HELP_RL_BURST'),
+                    margin: '0 0 6 ' + (labelWidth + 5)
+                }]
             }],
             dockedItems: [{
                 xtype: 'toolbar',
@@ -477,14 +515,20 @@ Ext.define('AS.ARC.apps.prometheus.core', {
     },
 
     saveWebConfigurationTab: function () {
-        var fn     = this,
-            editor = fn.win.down('#webYmlEditor');
+        var fn       = this,
+            tlsChk   = fn.win.down('#webTlsEnabled'),
+            interval = fn.win.down('#webRlInterval'),
+            burst    = fn.win.down('#webRlBurst');
 
         fn.win.el.mask(_S('COMMON', 'APPLYING'));
         AS.ARC.ajax({
             url:    AS.ARC.util.getApiUrlWithSid(fn.apiUrl, { act: 'set', tab: 'web-configuration' }),
             method: 'post',
-            params: { web_yml: editor ? editor.getValue() : '' },
+            params: {
+                tls_enabled: tlsChk   ? (tlsChk.getValue() ? '1' : '0') : '1',
+                rl_interval: interval ? String(interval.getValue())      : '1',
+                rl_burst:    burst    ? String(burst.getValue())         : '20'
+            },
             success: function () {
                 fn.win.el.unmask();
                 fn.switchTab('web-configuration');
@@ -598,9 +642,8 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             labelWidth = 200;
 
         var store = Ext.create('Ext.data.Store', {
-            pageSize: 5,
-            fields:   ['target'],
-            data:     Ext.Array.map(json.targets || [], function (t) { return { target: t }; })
+            fields:   ['target', 'scheme'],
+            data:     Ext.Array.map(json.targets || [], function (t) { return { target: t.target, scheme: t.scheme }; })
         });
 
         var grid = Ext.create('Ext.grid.Panel', {
@@ -608,6 +651,8 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             store:           store,
             border:          false,
             sortableColumns: false,
+            height:          270,
+            scroll:          'vertical',
             style: {
                 border: '#BBB 1px solid'
             },
@@ -616,6 +661,11 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                 dataIndex:    'target',
                 menuDisabled: true,
                 flex:         1
+            }, {
+                header:       _S('PROMETHEUS', 'COL_NE_SCHEME'),
+                dataIndex:    'scheme',
+                menuDisabled: true,
+                width:        80
             }],
             dockedItems: [{
                 xtype: 'toolbar',
@@ -641,9 +691,6 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                     }
                 }]
             }],
-            bbar: Ext.create('AS.ARC.pagingToolbar', {
-                store: store
-            }),
             listeners: {
                 selectionchange: function (model, sel) {
                     var has = sel.length > 0;
@@ -707,35 +754,46 @@ Ext.define('AS.ARC.apps.prometheus.core', {
         fn.targetPopup = Ext.create('AS.ARC.msgWindow', {
             parentWin: fn.win,
             title:     isModify ? _S('PROMETHEUS', 'TITLE_MODIFY_TARGET') : _S('PROMETHEUS', 'TITLE_ADD_TARGET'),
-            width:     550,
-            height:    200,
+            width:     600,
+            height:    240,
             iconType:  'info',
             asItems: [{
                 xtype:      'textfield',
                 fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_TARGET_HOST')),
                 itemId:     'popupTarget',
-                labelWidth: 60,
-                style:      'width: auto;',
+                labelWidth: 100,
+                width:      400,
                 emptyText:  _S('PROMETHEUS', 'HINT_NE_TARGET_HOST'),
                 value:      isModify ? record.get('target') : ''
+            }, {
+                xtype:      'combo',
+                fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_SCHEME')),
+                itemId:     'popupScheme',
+                labelWidth: 100,
+                width:      400,
+                store:      ['http', 'https'],
+                editable:   false,
+                value:      isModify ? (record.get('scheme') || 'http') : 'http'
             }],
             fbar: [{
                 text:    _S('COMMON', 'OK'),
                 handler: function () {
-                    var fld = fn.targetPopup.down('#popupTarget');
+                    var fld    = fn.targetPopup.down('#popupTarget');
+                    var scheme = fn.targetPopup.down('#popupScheme');
                     if (!fld) { return; }
 
                     var val = Ext.String.trim(fld.getValue());
 
-                    if (!val || /^https?:\/\//i.test(val) || !/^[^:]+:\d+$/.test(val)) {
+                    if (!val || /^https?:\/\//i.test(val)) {
                         fld.markInvalid(_S('PROMETHEUS', 'ERR_TARGET_FORMAT'));
                         return;
                     }
 
                     if (isModify) {
                         record.set('target', val);
+                        record.set('scheme', scheme.getValue());
                     } else {
-                        store.add({ target: val });
+                        store.add({ target: val, scheme: scheme.getValue() });
                     }
                     fn.targetPopup.close();
                 }
@@ -752,11 +810,16 @@ Ext.define('AS.ARC.apps.prometheus.core', {
         var fn   = this,
             grid = fn.win.down('#neTargetsGrid');
 
-        var targets = [];
+        var httpTargets = [], httpsTargets = [];
         if (grid) {
             grid.getStore().each(function (rec) {
                 var t = Ext.String.trim(rec.get('target'));
-                if (t) { targets.push(t); }
+                if (!t) { return; }
+                if (rec.get('scheme') === 'https') {
+                    httpsTargets.push(t);
+                } else {
+                    httpTargets.push(t);
+                }
             });
         }
 
@@ -765,7 +828,8 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             url:    AS.ARC.util.getApiUrlWithSid(fn.apiUrl, { act: 'set', tab: 'node-exporter' }),
             method: 'post',
             params: {
-                targets: targets.join(',')
+                http_targets:  httpTargets.join(','),
+                https_targets: httpsTargets.join(',')
             },
             success: function () {
                 fn.win.el.unmask();
@@ -784,7 +848,6 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             labelWidth = 200;
 
         var store = Ext.create('Ext.data.Store', {
-            pageSize: 5,
             fields:   ['target'],
             data:     Ext.Array.map(json.targets || [], function (t) { return { target: t }; })
         });
@@ -794,6 +857,8 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             store:           store,
             border:          false,
             sortableColumns: false,
+            height:          270,
+            scroll:          'vertical',
             style: { border: '#BBB 1px solid' },
             columns: [{
                 header:       _S('PROMETHEUS', 'COL_NE_TARGET'),
@@ -825,7 +890,6 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                     }
                 }]
             }],
-            bbar: Ext.create('AS.ARC.pagingToolbar', { store: store }),
             listeners: {
                 selectionchange: function (model, sel) {
                     var has = sel.length > 0;
@@ -897,7 +961,7 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                 fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_TARGET_HOST')),
                 itemId:     'promJobPopupTarget',
                 labelWidth: 60,
-                style:      'width: auto;',
+                width:      250,
                 emptyText:  _S('PROMETHEUS', 'HINT_PROM_TARGET_HOST'),
                 value:      isModify ? record.get('target') : ''
             }],
@@ -961,7 +1025,6 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             labelWidth = 200;
 
         var store = Ext.create('Ext.data.Store', {
-            pageSize: 5,
             fields:   ['target'],
             data:     Ext.Array.map(json.targets || [], function (t) { return { target: t }; })
         });
@@ -971,6 +1034,8 @@ Ext.define('AS.ARC.apps.prometheus.core', {
             store:           store,
             border:          false,
             sortableColumns: false,
+            height:          270,
+            scroll:          'vertical',
             style: { border: '#BBB 1px solid' },
             columns: [{
                 header:       _S('PROMETHEUS', 'COL_NE_TARGET'),
@@ -1002,7 +1067,6 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                     }
                 }]
             }],
-            bbar: Ext.create('AS.ARC.pagingToolbar', { store: store }),
             listeners: {
                 selectionchange: function (model, sel) {
                     var has = sel.length > 0;
@@ -1074,7 +1138,7 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                 fieldLabel: AS.ARC.util.fontToBold(_S('PROMETHEUS', 'LABEL_NE_TARGET_HOST')),
                 itemId:     'grafanaJobPopupTarget',
                 labelWidth: 60,
-                style:      'width: auto;',
+                width:      250,
                 emptyText:  _S('PROMETHEUS', 'HINT_PROM_TARGET_HOST'),
                 value:      isModify ? record.get('target') : ''
             }],
@@ -1145,7 +1209,7 @@ Ext.define('AS.ARC.apps.prometheus.core', {
                 itemId: 'westPanel',
                 cls:    'as-selector-panel',
                 border: false,
-                width:  170,
+                width:  190,
                 layout: 'fit',
                 items:  [fn.getNavGrid()]
             }, {
